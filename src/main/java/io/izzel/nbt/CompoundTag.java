@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
-public class CompoundTag extends Tag<Map<String, Tag<?>>> {
+public final class CompoundTag extends Tag<Map<String, Tag<?>>> {
 
     private final Map<String, Tag<?>> value;
     private String name;

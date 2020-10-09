@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public class StringTag extends Tag<String> {
+public final class StringTag extends Tag<String> {
 
     private final String value;
 

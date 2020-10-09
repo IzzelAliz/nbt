@@ -5,7 +5,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 import java.util.Arrays;
 import java.util.StringJoiner;
 
-public class LongArrayTag extends Tag<long[]> {
+public final class LongArrayTag extends Tag<long[]> {
 
     private final long[] value;
 

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-public class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>> {
+public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>> {
 
     private final List<Tag<?>> value;
     private TagType tagType;

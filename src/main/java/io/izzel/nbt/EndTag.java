@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public class EndTag extends Tag<Void> {
+public final class EndTag extends Tag<Void> {
 
     public static final EndTag INSTANCE = new EndTag();
 

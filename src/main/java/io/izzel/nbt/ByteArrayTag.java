@@ -5,7 +5,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 import java.util.Arrays;
 import java.util.StringJoiner;
 
-public class ByteArrayTag extends Tag<byte[]> {
+public final class ByteArrayTag extends Tag<byte[]> {
 
     private final byte[] value;
 

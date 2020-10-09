@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public class DoubleTag extends Tag<Double> {
+public final class DoubleTag extends Tag<Double> {
 
     private final double value;
 

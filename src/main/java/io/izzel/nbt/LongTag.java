@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public class LongTag extends Tag<Long> {
+public final class LongTag extends Tag<Long> {
 
     private final long value;
 

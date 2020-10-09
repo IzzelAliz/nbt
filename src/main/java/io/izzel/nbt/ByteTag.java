@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public class ByteTag extends Tag<Byte> {
+public final class ByteTag extends Tag<Byte> {
 
     private final byte value;
 

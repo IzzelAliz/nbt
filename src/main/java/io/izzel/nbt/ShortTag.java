@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public class ShortTag extends Tag<Short> {
+public final class ShortTag extends Tag<Short> {
 
     private final short value;
 

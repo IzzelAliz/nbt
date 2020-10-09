@@ -5,7 +5,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 import java.util.Arrays;
 import java.util.StringJoiner;
 
-public class IntArrayTag extends Tag<int[]> {
+public final class IntArrayTag extends Tag<int[]> {
 
     private final int[] value;
 
