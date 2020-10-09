@@ -88,7 +88,7 @@ public class NbtReader {
                 int len = byteBuffer.getInt();
                 listVisitor.visitLength(len);
                 for (int i = 0; i < len; i++) {
-                    this.read(b, listVisitor.visitValue(i), null);
+                    this.read(b, listVisitor.visitValue(), null);
                 }
                 return;
             }

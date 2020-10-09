@@ -22,9 +22,9 @@ public class TagListVisitor {
         }
     }
 
-    public TagValueVisitor visitValue(int index) {
+    public TagValueVisitor visitValue() {
         if (this.visitor != null) {
-            return this.visitor.visitValue(index);
+            return this.visitor.visitValue();
         }
         return null;
     }

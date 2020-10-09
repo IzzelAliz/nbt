@@ -83,9 +83,8 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
         TagListVisitor listVisitor = visitor.visitList();
         listVisitor.visitType(this.tagType);
         listVisitor.visitLength(this.value.size());
-        int i = 0;
         for (Tag<?> tag : this.value) {
-            tag.accept(listVisitor.visitValue(i++));
+            tag.accept(listVisitor.visitValue());
         }
     }
 

@@ -256,7 +256,7 @@ public class NbtWriter extends TagValueVisitor {
         }
 
         @Override
-        public TagValueVisitor visitValue(int index) {
+        public TagValueVisitor visitValue() {
             return new NbtWriter(this.data, null, false);
         }
     }

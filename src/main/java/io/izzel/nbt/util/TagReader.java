@@ -104,11 +104,10 @@ public class TagReader extends TagValueVisitor {
 
     @Override
     public TagCompoundVisitor visitNamedCompound(String name) {
-        return new CompoundReader() {
+        return new CompoundReader(name) {
             @Override
             public void visitEnd() {
                 super.visitEnd();
-                this.tag.setName(name);
                 TagReader.this.setTag(this.tag);
             }
         };
@@ -128,6 +127,7 @@ public class TagReader extends TagValueVisitor {
 
         ListTag listTag;
         private int length;
+        private int index = 0;
 
         public ListReader() {
             super(null);
@@ -144,8 +144,8 @@ public class TagReader extends TagValueVisitor {
         }
 
         @Override
-        public TagValueVisitor visitValue(int index) {
-            if (index >= this.length) throw new ArrayIndexOutOfBoundsException(index);
+        public TagValueVisitor visitValue() {
+            if (++this.index > this.length) throw new ArrayIndexOutOfBoundsException(this.index);
             return new TagReader() {
                 @Override
                 protected void setTag(Tag<?> tag) {
@@ -158,25 +158,40 @@ public class TagReader extends TagValueVisitor {
 
     private static class CompoundReader extends TagCompoundVisitor {
 
-        final CompoundTag tag = new CompoundTag();
+        final CompoundTag tag;
+
+        public CompoundReader(String name) {
+            super(null);
+            this.tag = new CompoundTag(name);
+        }
 
         public CompoundReader() {
             super(null);
+            this.tag = new CompoundTag();
         }
 
         @Override
         public TagValueVisitor visit(String key) {
-            return new TagReader() {
-                @Override
-                protected void setTag(Tag<?> tag) {
-                    super.setTag(tag);
-                    CompoundReader.this.tag.put(key, tag);
-                }
-            };
+            return new CompoundTagReader(key);
         }
 
         @Override
         public void visitEnd() {
+            super.visitEnd();
+        }
+
+        private final class CompoundTagReader extends TagReader {
+            private final String key;
+
+            public CompoundTagReader(String key) {
+                this.key = key;
+            }
+
+            @Override
+            protected void setTag(Tag<?> tag) {
+                super.setTag(tag);
+                CompoundReader.this.tag.put(key, tag);
+            }
         }
     }
 }
