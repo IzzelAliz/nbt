@@ -49,4 +49,11 @@ public enum TagType {
         }
         return ret;
     }
+
+    public static TagType getById(int tagId) {
+        if (tagId < 0 || tagId > 12) {
+            throw new IllegalArgumentException("Unknown tag type " + tagId);
+        }
+        return TagType.values()[tagId];
+    }
 }

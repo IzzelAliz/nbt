@@ -84,7 +84,7 @@ public class NbtReader {
             case 9: {
                 TagListVisitor listVisitor = visitor.visitList();
                 byte b = byteBuffer.get();
-                listVisitor.visitType(TagType.values()[b]);
+                listVisitor.visitType(TagType.getById(b));
                 int len = byteBuffer.getInt();
                 listVisitor.visitLength(len);
                 for (int i = 0; i < len; i++) {
