@@ -28,4 +28,10 @@ public class TagListVisitor {
         }
         return null;
     }
+
+    public void visitEnd() {
+        if (this.visitor != null) {
+            this.visitor.visitEnd();
+        }
+    }
 }

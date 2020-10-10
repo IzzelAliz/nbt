@@ -131,7 +131,9 @@ public class NbtReader {
                 }
             } else if (context instanceof ListContext) {
                 TagListVisitor tagVisitor = ((ListContext) context).tagVisitor;
-                if (((ListContext) context).leftTagCount.getAndDecrement() > 0) {
+                if (((ListContext) context).leftTagCount.getAndDecrement() <= 0) {
+                    tagVisitor.visitEnd();
+                } else {
                     if (++pointer >= stack.length) {
                         stack = Arrays.copyOf(stack, stack.length * 2);
                     }

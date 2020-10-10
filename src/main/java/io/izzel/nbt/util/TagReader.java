@@ -84,8 +84,8 @@ public class TagReader extends TagValueVisitor {
     public TagListVisitor visitList() {
         return new TagReader.ListReader() {
             @Override
-            public void visitType(TagType tagType) {
-                super.visitType(tagType);
+            public void visitEnd() {
+                super.visitEnd();
                 TagReader.this.setTag(this.listTag);
             }
         };
@@ -145,7 +145,9 @@ public class TagReader extends TagValueVisitor {
 
         @Override
         public TagValueVisitor visitValue() {
-            if (++this.index > this.length) throw new ArrayIndexOutOfBoundsException(this.index);
+            if (++this.index > this.length) {
+                throw new IndexOutOfBoundsException("Index: " + this.index + ", Size: " + this.length);
+            }
             return new TagReader() {
                 @Override
                 protected void setTag(Tag<?> tag) {

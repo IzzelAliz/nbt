@@ -86,6 +86,7 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
         for (Tag<?> tag : this.value) {
             tag.accept(listVisitor.visitValue());
         }
+        listVisitor.visitEnd();
     }
 
     @Override
