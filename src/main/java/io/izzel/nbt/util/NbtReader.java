@@ -132,8 +132,7 @@ public class NbtReader {
             } else if (context instanceof ListContext) {
                 TagListVisitor tagVisitor = ((ListContext) context).tagVisitor;
                 if (((ListContext) context).leftTagCount.getAndDecrement() > 0) {
-                    stack[pointer++] = context;
-                    if (pointer >= stack.length) {
+                    if (++pointer >= stack.length) {
                         stack = Arrays.copyOf(stack, stack.length * 2);
                     }
                     stack[pointer++] = new ValueContext(tagVisitor.visitValue(), ((ListContext) context).tagType, null);
@@ -144,8 +143,7 @@ public class NbtReader {
                 if (tagType == TagType.END) {
                     tagVisitor.visitEnd();
                 } else {
-                    stack[pointer++] = context;
-                    if (pointer >= stack.length) {
+                    if (++pointer >= stack.length) {
                         stack = Arrays.copyOf(stack, stack.length * 2);
                     }
                     stack[pointer++] = new ValueContext(tagVisitor.visit(nextString()), tagType, null);
