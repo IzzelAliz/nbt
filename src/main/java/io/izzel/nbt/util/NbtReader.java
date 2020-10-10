@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
 public class NbtReader {
@@ -37,9 +39,7 @@ public class NbtReader {
     }
 
     public void accept(TagValueVisitor visitor) {
-        byte type = byteBuffer.get();
-        String name = nextString();
-        this.read(type, visitor, name);
+        this.read(new ValueContext(visitor, TagType.getById(byteBuffer.get()), nextString()));
     }
 
     public CompoundTag readAsTag() {
@@ -48,85 +48,109 @@ public class NbtReader {
         return (CompoundTag) reader.getTag();
     }
 
-    private void read(byte type, TagValueVisitor visitor, String name) {
-        switch (type) {
-            case 0:
-                visitor.visitEnd();
-                return;
-            case 1:
-                visitor.visitByte(byteBuffer.get());
-                return;
-            case 2:
-                visitor.visitShort(byteBuffer.getShort());
-                return;
-            case 3:
-                visitor.visitInt(byteBuffer.getInt());
-                return;
-            case 4:
-                visitor.visitLong(byteBuffer.getLong());
-                return;
-            case 5:
-                visitor.visitFloat(byteBuffer.getFloat());
-                return;
-            case 6:
-                visitor.visitDouble(byteBuffer.getDouble());
-                return;
-            case 7: {
-                int len = byteBuffer.getInt();
-                byte[] bytes = new byte[len];
-                byteBuffer.get(bytes, 0, len);
-                visitor.visitByteArray(bytes);
-                return;
-            }
-            case 8:
-                visitor.visitString(this.nextString());
-                return;
-            case 9: {
-                TagListVisitor listVisitor = visitor.visitList();
-                byte b = byteBuffer.get();
-                listVisitor.visitType(TagType.getById(b));
-                int len = byteBuffer.getInt();
-                listVisitor.visitLength(len);
-                for (int i = 0; i < len; i++) {
-                    this.read(b, listVisitor.visitValue(), null);
+    private void read(ValueContext initContext) {
+        Object[] stack = new Object[16];
+        stack[0] = initContext;
+        int pointer = 1;
+        while (pointer > 0) {
+            Object context = stack[--pointer];
+            if (context instanceof ValueContext) {
+                TagValueVisitor tagVisitor = ((ValueContext) context).tagVisitor;
+                switch (((ValueContext) context).tagType) {
+                    case END: {
+                        tagVisitor.visitEnd();
+                        break;
+                    }
+                    case BYTE: {
+                        tagVisitor.visitByte(byteBuffer.get());
+                        break;
+                    }
+                    case SHORT: {
+                        tagVisitor.visitShort(byteBuffer.getShort());
+                        break;
+                    }
+                    case INT: {
+                        tagVisitor.visitInt(byteBuffer.getInt());
+                        break;
+                    }
+                    case LONG: {
+                        tagVisitor.visitLong(byteBuffer.getLong());
+                        break;
+                    }
+                    case FLOAT: {
+                        tagVisitor.visitFloat(byteBuffer.getFloat());
+                        break;
+                    }
+                    case DOUBLE: {
+                        tagVisitor.visitDouble(byteBuffer.getDouble());
+                        break;
+                    }
+                    case BYTE_ARRAY: {
+                        int len = byteBuffer.getInt();
+                        byte[] bytes = new byte[len];
+                        byteBuffer.get(bytes, 0, len);
+                        tagVisitor.visitByteArray(bytes);
+                        break;
+                    }
+                    case STRING: {
+                        tagVisitor.visitString(this.nextString());
+                        break;
+                    }
+                    case LIST: {
+                        TagType tagType = TagType.getById(byteBuffer.get());
+                        int len = byteBuffer.getInt();
+                        TagListVisitor visitor = tagVisitor.visitList();
+                        stack[pointer++] = new ListContext(len, visitor, tagType);
+                        visitor.visitType(tagType);
+                        visitor.visitLength(len);
+                        break;
+                    }
+                    case COMPOUND: {
+                        String name = ((ValueContext) context).tagName;
+                        if (name != null) {
+                            stack[pointer++] = new CompoundContext(tagVisitor.visitNamedCompound(name));
+                        } else {
+                            stack[pointer++] = new CompoundContext(tagVisitor.visitCompound());
+                        }
+                        break;
+                    }
+                    case INT_ARRAY: {
+                        int len = byteBuffer.getInt();
+                        int[] ints = new int[len];
+                        byteBuffer.asIntBuffer().get(ints, 0, len);
+                        tagVisitor.visitIntArray(ints);
+                        break;
+                    }
+                    case LONG_ARRAY: {
+                        int len = byteBuffer.getInt();
+                        long[] longs = new long[len];
+                        byteBuffer.asLongBuffer().get(longs, 0, len);
+                        tagVisitor.visitLongArray(longs);
+                        break;
+                    }
                 }
-                return;
-            }
-            case 10: {
-                TagCompoundVisitor compoundVisitor;
-                if (name != null) {
-                    compoundVisitor = visitor.visitNamedCompound(name);
+            } else if (context instanceof ListContext) {
+                TagListVisitor tagVisitor = ((ListContext) context).tagVisitor;
+                if (((ListContext) context).leftTagCount.getAndDecrement() > 0) {
+                    stack[pointer++] = context;
+                    if (pointer >= stack.length) {
+                        stack = Arrays.copyOf(stack, stack.length * 2);
+                    }
+                    stack[pointer++] = new ValueContext(tagVisitor.visitValue(), ((ListContext) context).tagType, null);
+                }
+            } else if (context instanceof CompoundContext) {
+                TagCompoundVisitor tagVisitor = ((CompoundContext) context).tagVisitor;
+                TagType tagType = TagType.getById(byteBuffer.get());
+                if (tagType == TagType.END) {
+                    tagVisitor.visitEnd();
                 } else {
-                    compoundVisitor = visitor.visitCompound();
+                    stack[pointer++] = context;
+                    if (pointer >= stack.length) {
+                        stack = Arrays.copyOf(stack, stack.length * 2);
+                    }
+                    stack[pointer++] = new ValueContext(tagVisitor.visit(nextString()), tagType, null);
                 }
-                while (true) {
-                    byte b = byteBuffer.get();
-                    if (b == 0) break;
-                    String key = nextString();
-                    read(b, compoundVisitor.visit(key), null);
-                }
-                compoundVisitor.visitEnd();
-                return;
             }
-            case 11: {
-                int len = byteBuffer.getInt();
-                int[] ints = new int[len];
-                for (int i = 0; i < len; i++) {
-                    ints[i] = byteBuffer.getInt();
-                }
-                visitor.visitIntArray(ints);
-                return;
-            }
-            case 12: {
-                int len = byteBuffer.getInt();
-                long[] longs = new long[len];
-                for (int i = 0; i < len; i++) {
-                    longs[i] = byteBuffer.getLong();
-                }
-                visitor.visitLongArray(longs);
-                return;
-            }
-            default: {}
         }
     }
 
@@ -151,6 +175,38 @@ public class NbtReader {
             }
             out.flush();
             return new NbtReader(out.toByteArray());
+        }
+    }
+
+    private static final class ValueContext {
+        private final String tagName;
+        private final TagType tagType;
+        private final TagValueVisitor tagVisitor;
+
+        private ValueContext(TagValueVisitor tagVisitor, TagType tagType, String tagName) {
+            this.tagName = tagName;
+            this.tagType = tagType;
+            this.tagVisitor = tagVisitor;
+        }
+    }
+
+    private static final class ListContext {
+        private final TagType tagType;
+        private final TagListVisitor tagVisitor;
+        private final AtomicInteger leftTagCount;
+
+        private ListContext(int tagCount, TagListVisitor tagVisitor, TagType tagType) {
+            this.tagType = tagType;
+            this.tagVisitor = tagVisitor;
+            this.leftTagCount = new AtomicInteger(tagCount);
+        }
+    }
+
+    private static final class CompoundContext {
+        private final TagCompoundVisitor tagVisitor;
+
+        private CompoundContext(TagCompoundVisitor tagVisitor) {
+            this.tagVisitor = tagVisitor;
         }
     }
 }
