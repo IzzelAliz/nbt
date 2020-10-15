@@ -5,56 +5,33 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.zip.GZIPOutputStream;
 
-public class NbtWriter extends TagValueVisitor {
+public class NbtWriter extends TagValueVisitor implements Closeable {
 
-    private final ByteArrayOutputStream out;
     private final DataOutputStream data;
     private final String name;
     private final boolean tagType;
 
-    public NbtWriter() {
+    public NbtWriter(OutputStream stream) {
         super(null);
-        this.out = new ByteArrayOutputStream();
-        this.data = new DataOutputStream(this.out);
         this.name = null;
         this.tagType = true;
+        this.data = stream instanceof DataOutputStream ? (DataOutputStream) stream : new DataOutputStream(stream);
     }
 
-    public NbtWriter(boolean gzip) throws IOException {
-        super(null);
-        this.out = new ByteArrayOutputStream();
-        if (gzip) {
-            this.data = new DataOutputStream(new GZIPOutputStream(this.out));
-        } else {
-            this.data = new DataOutputStream(this.out);
-        }
-        this.name = null;
-        this.tagType = true;
+    public NbtWriter(OutputStream stream, boolean gzip) throws IOException {
+        this(gzip ? new GZIPOutputStream(stream) : stream);
     }
 
-    private NbtWriter(DataOutputStream data, String name, boolean tagType) {
-        super(null);
-        this.out = null;
-        this.data = data;
-        this.name = name;
-        this.tagType = tagType;
-    }
-
-    public byte[] toByteArray() {
-        try {
-            data.close();
-            out.close();
-            return Objects.requireNonNull(out).toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    public void close() throws IOException {
+        this.data.close();
     }
 
     @Override
@@ -226,6 +203,13 @@ public class NbtWriter extends TagValueVisitor {
             data.writeShort(bytes.length);
             data.write(bytes, 0, bytes.length);
         }
+    }
+
+    private NbtWriter(DataOutputStream data, String name, boolean tagType) {
+        super(null);
+        this.data = data;
+        this.name = name;
+        this.tagType = tagType;
     }
 
     private static class ListWriter extends TagListVisitor {

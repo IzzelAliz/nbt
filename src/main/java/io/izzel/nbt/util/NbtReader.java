@@ -6,49 +6,43 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
-public class NbtReader {
+public class NbtReader implements Closeable {
 
-    public static void main(String[] args) throws Throwable {
-        CompoundTag read = fromGzip(Paths.get("G:\\Minecraft\\.minecraft\\saves\\新的世界\\level.dat")).readAsTag();
-        System.out.println(read);
-        NbtWriter writer = new NbtWriter(true);
-        read.accept(writer);
-        Files.write(Paths.get("G:\\Minecraft\\.minecraft\\saves\\新的世界\\level1.dat"), writer.toByteArray());
+    private final DataInputStream data;
+
+    public NbtReader(InputStream stream) {
+        this.data = stream instanceof DataInputStream ? (DataInputStream) stream : new DataInputStream(stream);
     }
 
-    private final ByteBuffer byteBuffer;
-
-    public NbtReader(ByteBuffer byteBuffer) {
-        this.byteBuffer = byteBuffer;
+    public NbtReader(InputStream stream, boolean gzip) throws IOException {
+        this(gzip ? new GZIPInputStream(stream) : stream);
     }
 
-    public NbtReader(byte[] bytes) {
-        this.byteBuffer = ByteBuffer.wrap(bytes);
+    public void accept(TagValueVisitor visitor) throws IOException {
+        this.read(new ValueContext(visitor, nextType(), nextString()));
     }
 
-    public void accept(TagValueVisitor visitor) {
-        this.read(new ValueContext(visitor, TagType.getById(byteBuffer.get()), nextString()));
+    @Override
+    public void close() throws IOException {
+        this.data.close();
     }
 
-    public CompoundTag readAsTag() {
+    public CompoundTag readAsTag() throws IOException {
         TagReader reader = new TagReader();
         this.accept(reader);
         return (CompoundTag) reader.getTag();
     }
 
-    private void read(ValueContext initContext) {
+    private void read(ValueContext initContext) throws IOException {
         Object[] stack = new Object[16];
         stack[0] = initContext;
         int pointer = 1;
@@ -62,43 +56,51 @@ public class NbtReader {
                         break;
                     }
                     case BYTE: {
-                        tagVisitor.visitByte(byteBuffer.get());
+                        tagVisitor.visitByte(data.readByte());
                         break;
                     }
                     case SHORT: {
-                        tagVisitor.visitShort(byteBuffer.getShort());
+                        tagVisitor.visitShort(data.readShort());
                         break;
                     }
                     case INT: {
-                        tagVisitor.visitInt(byteBuffer.getInt());
+                        tagVisitor.visitInt(data.readInt());
                         break;
                     }
                     case LONG: {
-                        tagVisitor.visitLong(byteBuffer.getLong());
+                        tagVisitor.visitLong(data.readLong());
                         break;
                     }
                     case FLOAT: {
-                        tagVisitor.visitFloat(byteBuffer.getFloat());
+                        tagVisitor.visitFloat(data.readFloat());
                         break;
                     }
                     case DOUBLE: {
-                        tagVisitor.visitDouble(byteBuffer.getDouble());
+                        tagVisitor.visitDouble(data.readDouble());
                         break;
                     }
                     case BYTE_ARRAY: {
-                        int len = byteBuffer.getInt();
-                        byte[] bytes = new byte[len];
-                        byteBuffer.get(bytes, 0, len);
-                        tagVisitor.visitByteArray(bytes);
-                        break;
+                        int len = data.readInt();
+                        if (len >= 0 && len <= 0x7FFFFFF7) {
+                            byte[] bytes = new byte[7];
+                            int offset = 0;
+                            do {
+                                bytes = Arrays.copyOf(bytes, Math.min(bytes.length * 2 + 1, len));
+                                data.readFully(bytes, offset, bytes.length - offset);
+                                offset = bytes.length;
+                            } while (offset < len);
+                            tagVisitor.visitByteArray(bytes);
+                            break;
+                        }
+                        throw new IOException("Size exceeds " + 0x7FFFFFF7 + ", got " + (len & 0xFFFFFFFFL));
                     }
                     case STRING: {
                         tagVisitor.visitString(this.nextString());
                         break;
                     }
                     case LIST: {
-                        TagType tagType = TagType.getById(byteBuffer.get());
-                        int len = byteBuffer.getInt();
+                        TagType tagType = nextType();
+                        int len = data.readInt();
                         TagListVisitor visitor = tagVisitor.visitList();
                         stack[pointer++] = new ListContext(len, visitor, tagType);
                         visitor.visitType(tagType);
@@ -115,18 +117,38 @@ public class NbtReader {
                         break;
                     }
                     case INT_ARRAY: {
-                        int len = byteBuffer.getInt();
-                        int[] ints = new int[len];
-                        byteBuffer.asIntBuffer().get(ints, 0, len);
-                        tagVisitor.visitIntArray(ints);
-                        break;
+                        int len = data.readInt();
+                        if (len >= 0 && len <= 0x7FFFFFF7) {
+                            int[] ints = new int[7];
+                            int offset = 0;
+                            do {
+                                ints = Arrays.copyOf(ints, Math.min(ints.length * 2 + 1, len));
+                                for (int i = offset, size = ints.length; i < size; ++i) {
+                                    ints[i] = data.readInt();
+                                }
+                                offset = ints.length;
+                            } while (offset < len);
+                            tagVisitor.visitIntArray(ints);
+                            break;
+                        }
+                        throw new IOException("Size exceeds " + 0x7FFFFFF7 + ", got " + (len & 0xFFFFFFFFL));
                     }
                     case LONG_ARRAY: {
-                        int len = byteBuffer.getInt();
-                        long[] longs = new long[len];
-                        byteBuffer.asLongBuffer().get(longs, 0, len);
-                        tagVisitor.visitLongArray(longs);
-                        break;
+                        int len = data.readInt();
+                        if (len >= 0 && len <= 0x7FFFFFF7) {
+                            long[] longs = new long[7];
+                            int offset = 0;
+                            do {
+                                longs = Arrays.copyOf(longs, Math.min(longs.length * 2 + 1, len));
+                                for (int i = offset, size = longs.length; i < size; ++i) {
+                                    longs[i] = data.readLong();
+                                }
+                                offset = longs.length;
+                            } while (offset < len);
+                            tagVisitor.visitLongArray(longs);
+                            break;
+                        }
+                        throw new IOException("Size exceeds " + 0x7FFFFFF7 + ", got " + (len & 0xFFFFFFFFL));
                     }
                 }
             } else if (context instanceof ListContext) {
@@ -141,7 +163,7 @@ public class NbtReader {
                 }
             } else if (context instanceof CompoundContext) {
                 TagCompoundVisitor tagVisitor = ((CompoundContext) context).tagVisitor;
-                TagType tagType = TagType.getById(byteBuffer.get());
+                TagType tagType = nextType();
                 if (tagType == TagType.END) {
                     tagVisitor.visitEnd();
                 } else {
@@ -154,28 +176,19 @@ public class NbtReader {
         }
     }
 
-    private String nextString() {
-        int len = byteBuffer.getShort() & 0xFFFF;
-        byte[] bytes = new byte[len];
-        byteBuffer.get(bytes, 0, len);
-        return new String(bytes, StandardCharsets.UTF_8);
-    }
-
-    public static NbtReader from(Path path) throws IOException {
-        return new NbtReader(Files.readAllBytes(path));
-    }
-
-    public static NbtReader fromGzip(Path path) throws IOException {
-        try (InputStream in = new GZIPInputStream(Files.newInputStream(path));
-             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            out.flush();
-            return new NbtReader(out.toByteArray());
+    private TagType nextType() throws IOException {
+        try {
+            return TagType.getById(data.readByte());
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e.getMessage());
         }
+    }
+
+    private String nextString() throws IOException {
+        int len = data.readShort() & 0xFFFF;
+        byte[] bytes = new byte[len];
+        data.readFully(bytes, 0, len);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     private static final class ValueContext {
