@@ -96,12 +96,10 @@ public class NbtTest {
 
     @Test
     public void testDeepRecursive() throws IOException {
-        ListTag tag = new ListTag(TagType.END);
+        ListTag tag = ListTag.empty();
 
         for (int i = 0; i < 0x7FF7; ++i) {
-            ListTag outerTag = new ListTag(TagType.LIST);
-            outerTag.add(tag);
-            tag = outerTag;
+            tag = ListTag.builder(TagType.LIST).add(tag).build();
         }
 
         CompoundTag compoundTag = new CompoundTag("");

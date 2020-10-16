@@ -86,7 +86,7 @@ public class TagReader extends TagValueVisitor {
             @Override
             public void visitEnd() {
                 super.visitEnd();
-                TagReader.this.setTag(this.listTag);
+                setTag(builder.build());
             }
         };
     }
@@ -125,7 +125,8 @@ public class TagReader extends TagValueVisitor {
 
     private static class ListReader extends TagListVisitor {
 
-        ListTag listTag;
+        ListTag.Builder builder;
+
         private int length;
         private int index = 0;
 
@@ -135,7 +136,7 @@ public class TagReader extends TagValueVisitor {
 
         @Override
         public void visitType(TagType tagType) {
-            this.listTag = new ListTag(tagType);
+            this.builder = ListTag.builder(tagType);
         }
 
         @Override
@@ -152,7 +153,7 @@ public class TagReader extends TagValueVisitor {
                 @Override
                 protected void setTag(Tag<?> tag) {
                     super.setTag(tag);
-                    ListReader.this.listTag.add(tag);
+                    builder.add(tag);
                 }
             };
         }

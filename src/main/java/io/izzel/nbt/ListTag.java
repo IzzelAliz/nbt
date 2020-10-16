@@ -7,61 +7,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.StringJoiner;
 
 public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>> {
 
+    private static final ListTag EMPTY = new ListTag(TagType.END, Collections.emptyList());
+
     private final List<Tag<?>> value;
-    private TagType tagType;
+    private final TagType tagType;
 
-    public ListTag(TagType tagType, List<Tag<?>> value) {
+    private ListTag(TagType type, List<Tag<?>> value) {
         super(TagType.LIST);
-        Objects.requireNonNull(tagType, "tagType");
-        Objects.requireNonNull(value, "value");
-        this.tagType = tagType;
-        this.value = new ArrayList<>(value);
+        this.tagType = type;
+        this.value = value;
     }
 
-    public ListTag(TagType tagType) {
-        this(tagType, Collections.emptyList());
-    }
-
-    public ListTag(List<Tag<?>> value) {
-        super(TagType.LIST);
-        Objects.requireNonNull(value, "value");
-        if (value.isEmpty()) {
-            throw new IllegalArgumentException("empty list");
-        } else {
-            this.tagType = value.get(0).getType();
-            this.value = new ArrayList<>(value);
-        }
-    }
-
-    public boolean add(Tag<?> tag) {
-        if (this.tagType.equals(tag.getType())) {
-            return this.value.add(tag);
-        } else {
-            return false;
-        }
+    public int size() {
+        return this.value.size();
     }
 
     public Tag<?> get(int index) {
         return this.value.get(index);
     }
 
-    public void clear() {
-        this.value.clear();
-    }
-
     public TagType getTagType() {
         return tagType;
-    }
-
-    public void setTagType(TagType tagType) {
-        this.tagType = tagType;
-        this.value.clear();
     }
 
     @Override
@@ -71,11 +41,7 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
 
     @Override
     public Tag<List<Tag<?>>> copy() {
-        ListTag tags = new ListTag(this.tagType);
-        for (Tag<?> tag : this.value) {
-            tags.add(tag.copy());
-        }
-        return tags;
+        return this;
     }
 
     @Override
@@ -101,5 +67,38 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
             joiner.add(tag.toString());
         }
         return joiner.toString();
+    }
+
+    public static ListTag empty() {
+        return EMPTY;
+    }
+
+    public static Builder builder(TagType type) {
+        return new Builder(new ArrayList<>(), type);
+    }
+
+    public static final class Builder {
+        private final List<Tag<?>> values;
+        private final TagType tagType;
+
+        private Builder(List<Tag<?>> values, TagType type) {
+            this.values = values;
+            this.tagType = type;
+        }
+
+        public Builder add(Tag<?> tag) {
+            if (tag.getType() != tagType) {
+                throw new IllegalArgumentException("Unmatched tag type (required " + tagType + ")");
+            }
+            values.add(tag);
+            return this;
+        }
+
+        public ListTag build() {
+            if (values.isEmpty() && tagType == TagType.END) {
+                return ListTag.EMPTY;
+            }
+            return new ListTag(tagType, Collections.unmodifiableList(values));
+        }
     }
 }
