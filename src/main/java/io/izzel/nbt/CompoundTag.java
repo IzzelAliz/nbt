@@ -7,8 +7,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 
 public final class CompoundTag extends Tag<Map<String, Tag<?>>> {
+
+    private static final Pattern SIMPLE_KEY = Pattern.compile("[A-Za-z0-9._+-]+");
 
     private final Map<String, Tag<?>> value;
     private String name;
@@ -89,7 +92,8 @@ public final class CompoundTag extends Tag<Map<String, Tag<?>>> {
     public String toString() {
         StringJoiner joiner = new StringJoiner(",", "{", "}");
         for (Map.Entry<String, Tag<?>> entry : this.value.entrySet()) {
-            joiner.add(entry.getKey() + ":" + entry.getValue());
+            String key = entry.getKey();
+            joiner.add((SIMPLE_KEY.matcher(key).matches() ? key : StringTag.escape(key)) + ":" + entry.getValue());
         }
         return joiner.toString();
     }
