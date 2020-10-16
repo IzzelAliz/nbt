@@ -1,6 +1,6 @@
 package io.izzel.nbt.visitor;
 
-public class TagCompoundVisitor {
+public abstract class TagCompoundVisitor {
 
     protected final TagCompoundVisitor visitor;
 

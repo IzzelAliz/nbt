@@ -2,7 +2,7 @@ package io.izzel.nbt.visitor;
 
 import io.izzel.nbt.TagType;
 
-public class TagListVisitor {
+public abstract class TagListVisitor {
 
     protected final TagListVisitor visitor;
 

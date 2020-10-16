@@ -1,6 +1,6 @@
 package io.izzel.nbt.visitor;
 
-public class TagValueVisitor {
+public abstract class TagValueVisitor {
 
     protected final TagValueVisitor visitor;
 
