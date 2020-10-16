@@ -7,16 +7,19 @@ import java.util.StringJoiner;
 
 public final class LongArrayTag extends Tag<long[]> {
 
+    private final int hash;
+
     private final long[] value;
 
     public LongArrayTag(long[] value) {
         super(TagType.LONG_ARRAY);
-        this.value = value;
+        this.hash = Arrays.hashCode(value);
+        this.value = Arrays.copyOf(value, value.length);
     }
 
     @Override
     public long[] getValue() {
-        return this.value;
+        return Arrays.copyOf(value, value.length);
     }
 
     @Override
@@ -36,5 +39,15 @@ public final class LongArrayTag extends Tag<long[]> {
             joiner.add(String.valueOf(l));
         }
         return joiner.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof LongArrayTag && Arrays.equals(((LongArrayTag) o).value, value);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hash;
     }
 }

@@ -7,16 +7,19 @@ import java.util.StringJoiner;
 
 public final class ByteArrayTag extends Tag<byte[]> {
 
+    private final int hash;
+
     private final byte[] value;
 
     public ByteArrayTag(byte[] value) {
         super(TagType.BYTE_ARRAY);
-        this.value = value;
+        this.hash = Arrays.hashCode(value);
+        this.value = Arrays.copyOf(value, value.length);
     }
 
     @Override
     public byte[] getValue() {
-        return this.value;
+        return Arrays.copyOf(value, value.length);
     }
 
     @Override
@@ -36,5 +39,15 @@ public final class ByteArrayTag extends Tag<byte[]> {
             joiner.add(String.valueOf(b));
         }
         return joiner.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ByteArrayTag && Arrays.equals(((ByteArrayTag) o).value, value);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hash;
     }
 }
