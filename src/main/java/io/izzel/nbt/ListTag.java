@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>> {
@@ -73,13 +74,17 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
         return EMPTY;
     }
 
+    public static Builder builder() {
+        return new Builder(new ArrayList<>(), null);
+    }
+
     public static Builder builder(TagType type) {
-        return new Builder(new ArrayList<>(), type);
+        return new Builder(new ArrayList<>(), Objects.requireNonNull(type));
     }
 
     public static final class Builder {
         private final List<Tag<?>> values;
-        private final TagType tagType;
+        private TagType tagType;
 
         private Builder(List<Tag<?>> values, TagType type) {
             this.values = values;
@@ -87,7 +92,9 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
         }
 
         public Builder add(Tag<?> tag) {
-            if (tag.getType() != tagType) {
+            if (tagType == null) {
+                tagType = tag.getType();
+            } else if (tag.getType() != tagType) {
                 throw new IllegalArgumentException("Unmatched tag type (required " + tagType + ")");
             }
             values.add(tag);
@@ -95,7 +102,7 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
         }
 
         public ListTag build() {
-            if (values.isEmpty() && tagType == TagType.END) {
+            if (values.isEmpty() && (tagType == null || tagType == TagType.END)) {
                 return ListTag.EMPTY;
             }
             return new ListTag(tagType, Collections.unmodifiableList(values));
