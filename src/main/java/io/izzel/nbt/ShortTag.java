@@ -21,11 +21,6 @@ public final class ShortTag extends Tag<Short> {
     }
 
     @Override
-    public Tag<Short> copy() {
-        return new ShortTag(this.value);
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitShort(this.value);
     }

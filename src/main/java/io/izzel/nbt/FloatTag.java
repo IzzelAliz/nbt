@@ -17,11 +17,6 @@ public final class FloatTag extends Tag<Float> {
     }
 
     @Override
-    public Tag<Float> copy() {
-        return new FloatTag(this.value);
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitFloat(this.value);
     }

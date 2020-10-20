@@ -18,8 +18,6 @@ public abstract class Tag<T> {
 
     public abstract T getValue();
 
-    public abstract Tag<T> copy();
-
     public abstract void accept(TagValueVisitor visitor);
 
     @Override

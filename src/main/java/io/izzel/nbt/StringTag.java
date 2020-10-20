@@ -17,11 +17,6 @@ public final class StringTag extends Tag<String> {
     }
 
     @Override
-    public Tag<String> copy() {
-        return new StringTag(this.value);
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitString(this.value);
     }

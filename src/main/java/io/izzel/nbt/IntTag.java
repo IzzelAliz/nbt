@@ -21,11 +21,6 @@ public final class IntTag extends Tag<Integer> {
     }
 
     @Override
-    public Tag<Integer> copy() {
-        return new IntTag(this.value);
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitInt(this.value);
     }

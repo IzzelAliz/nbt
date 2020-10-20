@@ -21,11 +21,6 @@ public final class DoubleTag extends Tag<Double> {
     }
 
     @Override
-    public Tag<Double> copy() {
-        return new DoubleTag(this.value);
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitDouble(this.value);
     }

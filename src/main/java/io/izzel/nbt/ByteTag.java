@@ -21,11 +21,6 @@ public final class ByteTag extends Tag<Byte> {
     }
 
     @Override
-    public Tag<Byte> copy() {
-        return new ByteTag(this.value);
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitByte(this.value);
     }

@@ -16,11 +16,6 @@ public final class EndTag extends Tag<Void> {
     }
 
     @Override
-    public Tag<Void> copy() {
-        return this;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitEnd();
     }

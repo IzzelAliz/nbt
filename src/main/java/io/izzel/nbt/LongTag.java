@@ -21,11 +21,6 @@ public final class LongTag extends Tag<Long> {
     }
 
     @Override
-    public Tag<Long> copy() {
-        return new LongTag(this.value);
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitLong(this.value);
     }

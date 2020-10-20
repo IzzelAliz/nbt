@@ -56,11 +56,6 @@ public final class CompoundTag extends Tag<List<CompoundTag.Entry<?>>> {
     }
 
     @Override
-    public Tag<List<Entry<?>>> copy() {
-        return this;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         TagCompoundVisitor compoundVisitor = visitor.visitCompound();
         for (Entry<?> entry : this.entries) {

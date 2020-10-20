@@ -41,11 +41,6 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
     }
 
     @Override
-    public Tag<List<Tag<?>>> copy() {
-        return this;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         TagListVisitor listVisitor = visitor.visitList();
         listVisitor.visitType(this.tagType);

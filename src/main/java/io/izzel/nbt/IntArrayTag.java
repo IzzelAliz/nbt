@@ -23,11 +23,6 @@ public final class IntArrayTag extends Tag<int[]> {
     }
 
     @Override
-    public Tag<int[]> copy() {
-        return new IntArrayTag(Arrays.copyOf(this.value, this.value.length));
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitIntArray(this.value);
     }

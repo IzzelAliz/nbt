@@ -23,11 +23,6 @@ public final class ByteArrayTag extends Tag<byte[]> {
     }
 
     @Override
-    public Tag<byte[]> copy() {
-        return new ByteArrayTag(Arrays.copyOf(this.value, this.value.length));
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitByteArray(this.value);
     }

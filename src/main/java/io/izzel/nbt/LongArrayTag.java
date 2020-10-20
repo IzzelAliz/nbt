@@ -23,11 +23,6 @@ public final class LongArrayTag extends Tag<long[]> {
     }
 
     @Override
-    public Tag<long[]> copy() {
-        return new LongArrayTag(Arrays.copyOf(this.value, this.value.length));
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitLongArray(this.value);
     }
