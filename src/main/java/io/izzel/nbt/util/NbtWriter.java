@@ -20,13 +20,24 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
 
     public NbtWriter(OutputStream stream) {
         super(null);
-        this.name = null;
+        this.name = "";
+        this.tagType = true;
+        this.data = stream instanceof DataOutputStream ? (DataOutputStream) stream : new DataOutputStream(stream);
+    }
+
+    public NbtWriter(OutputStream stream, String name) {
+        super(null);
+        this.name = name;
         this.tagType = true;
         this.data = stream instanceof DataOutputStream ? (DataOutputStream) stream : new DataOutputStream(stream);
     }
 
     public NbtWriter(OutputStream stream, boolean gzip) throws IOException {
         this(gzip ? new GZIPOutputStream(stream) : stream);
+    }
+
+    public NbtWriter(OutputStream stream, boolean gzip, String name) throws IOException {
+        this(gzip ? new GZIPOutputStream(stream) : stream, name);
     }
 
     @Override
@@ -150,19 +161,6 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
         try {
             if (tagType) data.write(10);
             this.maybeWriteName();
-            return new CompoundWriter(this.data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public TagCompoundVisitor visitNamedCompound(String name) {
-        try {
-            if (tagType) data.write(10);
-            byte[] bytes = name.getBytes(StandardCharsets.UTF_8);
-            data.writeShort(bytes.length);
-            data.write(bytes, 0, bytes.length);
             return new CompoundWriter(this.data);
         } catch (IOException e) {
             throw new RuntimeException(e);

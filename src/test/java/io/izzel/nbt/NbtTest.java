@@ -2,7 +2,6 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.util.NbtReader;
 import io.izzel.nbt.util.NbtWriter;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.*;
@@ -11,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Random;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.*;
 
 public class NbtTest {
     @Test
@@ -50,18 +49,20 @@ public class NbtTest {
                 "Q4aYDXQ0UHUIN65dpRkt9/YXDz79dwnW5mZAe3H9asLgwWq3P6JBh2bSdJZKmirPOdp1Vt6rePKd" +
                 "21IJvwSV6byYTYmPB5FaJruzT8VCU9OyGdpkco8Bjek039AEzAiH7aSh9zPk/x+AMy38YBAAAA==");
 
+        String name;
         CompoundTag tag;
 
         try (ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
             try (NbtReader reader = new NbtReader(stream, true)) {
-                tag = reader.readAsTag();
+                tag = reader.toCompoundTag();
+                name = reader.getName();
             }
         }
 
         byte[] newBytes;
 
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            try (NbtWriter writer = new NbtWriter(stream, true)) {
+            try (NbtWriter writer = new NbtWriter(stream, true, name)) {
                 tag.accept(writer);
             }
             newBytes = stream.toByteArray();
@@ -78,8 +79,7 @@ public class NbtTest {
         random.nextBytes(bytes);
 
         ByteArrayTag byteArrayTag = new ByteArrayTag(bytes);
-        CompoundTag compoundTag = new CompoundTag("");
-        compoundTag.put("Bytes", byteArrayTag);
+        CompoundTag compoundTag = CompoundTag.builder().add("Bytes", byteArrayTag).build();
 
         Path tmp = Files.createTempFile("io.izzel.nbt.", ".tmp");
 
@@ -88,9 +88,8 @@ public class NbtTest {
         }
 
         try (InputStream stream = Files.newInputStream(tmp); NbtReader reader = new NbtReader(stream)) {
-            CompoundTag newCompoundTag = reader.readAsTag();
-            Assert.assertEquals(newCompoundTag.getName(), "");
-            assertArrayEquals(((ByteArrayTag) newCompoundTag.get("Bytes")).getValue(), bytes);
+            assertEquals(reader.getName(), "");
+            assertArrayEquals(((ByteArrayTag) reader.toCompoundTag().get("Bytes")).getValue(), bytes);
         }
     }
 
@@ -102,9 +101,7 @@ public class NbtTest {
             tag = ListTag.builder(TagType.LIST).add(tag).build();
         }
 
-        CompoundTag compoundTag = new CompoundTag("");
-
-        compoundTag.put("List", tag);
+        CompoundTag compoundTag = CompoundTag.builder().add("List", tag).build();
 
         byte[] bytes;
 
@@ -117,9 +114,9 @@ public class NbtTest {
 
         try (ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
             try (NbtReader reader = new NbtReader(stream, true)) {
-                CompoundTag newCompoundTag = reader.readAsTag();
+                CompoundTag newCompoundTag = reader.toCompoundTag();
                 ListTag newTag = (ListTag) newCompoundTag.get("List");
-                Assert.assertEquals(newTag, tag);
+                assertEquals(newTag, tag);
             }
         }
     }

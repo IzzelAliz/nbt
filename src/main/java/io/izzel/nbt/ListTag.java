@@ -20,7 +20,7 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
     private ListTag(TagType type, List<Tag<?>> value) {
         super(TagType.LIST);
         this.tagType = type;
-        this.value = value;
+        this.value = Collections.unmodifiableList(value);
     }
 
     public int size() {
@@ -105,7 +105,7 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
             if (values.isEmpty() && (tagType == null || tagType == TagType.END)) {
                 return ListTag.EMPTY;
             }
-            return new ListTag(tagType, Collections.unmodifiableList(values));
+            return new ListTag(tagType, values);
         }
     }
 }

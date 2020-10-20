@@ -3,87 +3,68 @@ package io.izzel.nbt;
 import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.SortedSet;
 import java.util.StringJoiner;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-public final class CompoundTag extends Tag<Map<String, Tag<?>>> {
+public final class CompoundTag extends Tag<List<CompoundTag.Entry<?>>> {
+
+    private static final CompoundTag EMPTY = new CompoundTag(Collections.emptyNavigableMap(), Collections.emptyList());
 
     private static final Pattern SIMPLE_KEY = Pattern.compile("[A-Za-z0-9._+-]+");
 
-    private final Map<String, Tag<?>> value;
-    private String name;
+    private final NavigableMap<String, List<Entry<?>>> entryMap;
+    private final List<Entry<?>> entries;
 
-    public CompoundTag() {
-        this(Collections.emptyMap());
-    }
-
-    public CompoundTag(Map<String, Tag<?>> value) {
-        this(value, null);
-    }
-
-    public CompoundTag(String name) {
-        this(Collections.emptyMap(), name);
-    }
-
-    public CompoundTag(Map<String, Tag<?>> value, String name) {
+    private CompoundTag(NavigableMap<String, List<Entry<?>>> entryMap, List<Entry<?>> entries) {
         super(TagType.COMPOUND);
-        this.value = new LinkedHashMap<>(value);
-        this.name = name;
+        this.entries = Collections.unmodifiableList(entries);
+        this.entryMap = Collections.unmodifiableNavigableMap(entryMap);
     }
 
-    public String getName() {
-        return name;
+    public SortedSet<String> keys() {
+        return this.entryMap.navigableKeySet();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void put(String key, Tag<?> tag) {
-        this.value.put(key, tag);
+    public boolean contains(String key) {
+        return this.entryMap.containsKey(key);
     }
 
     public Tag<?> get(String key) {
-        return this.value.get(key);
+        List<? extends Entry<?>> entries = this.getEntries(key);
+        return entries.get(entries.size() - 1).getValue();
     }
 
-    public boolean containsKey(String key) {
-        return this.value.containsKey(key);
+    public Entry<?> getEntry(String key) {
+        List<? extends Entry<?>> entries = this.getEntries(key);
+        return entries.get(entries.size() - 1);
     }
 
-    public void remove(String key) {
-        this.value.remove(key);
-    }
-
-    @Override
-    public Map<String, Tag<?>> getValue() {
-        return this.value;
+    public List<? extends Entry<?>> getEntries(String key) {
+        return this.entryMap.getOrDefault(key, Collections.emptyList());
     }
 
     @Override
-    public Tag<Map<String, Tag<?>>> copy() {
-        CompoundTag tag = new CompoundTag(this.name);
-        for (Map.Entry<String, Tag<?>> entry : this.value.entrySet()) {
-            tag.put(entry.getKey(), entry.getValue().copy());
-        }
-        return tag;
+    public List<Entry<?>> getValue() {
+        return this.entries;
+    }
+
+    @Override
+    public Tag<List<Entry<?>>> copy() {
+        return this;
     }
 
     @Override
     public void accept(TagValueVisitor visitor) {
-        TagCompoundVisitor compoundVisitor;
-        if (this.name != null) {
-            compoundVisitor = visitor.visitNamedCompound(this.name);
-        } else {
-            compoundVisitor = visitor.visitCompound();
-        }
-        for (Map.Entry<String, Tag<?>> entry : this.value.entrySet()) {
-            String key = entry.getKey();
-            Tag<?> value = entry.getValue();
-            value.accept(compoundVisitor.visit(key));
+        TagCompoundVisitor compoundVisitor = visitor.visitCompound();
+        for (Entry<?> entry : this.entries) {
+            entry.getValue().accept(compoundVisitor.visit(entry.getKey()));
         }
         compoundVisitor.visitEnd();
     }
@@ -91,10 +72,86 @@ public final class CompoundTag extends Tag<Map<String, Tag<?>>> {
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(",", "{", "}");
-        for (Map.Entry<String, Tag<?>> entry : this.value.entrySet()) {
+        for (Entry<?> entry : this.entries) {
             String key = entry.getKey();
             joiner.add((SIMPLE_KEY.matcher(key).matches() ? key : StringTag.escape(key)) + ":" + entry.getValue());
         }
         return joiner.toString();
+    }
+
+    public static <T> Entry<T> entry(String name, Tag<T> tag) {
+        return new Entry<>(name, tag);
+    }
+
+    public static Builder builder() {
+        return new Builder(false);
+    }
+
+    public static Builder builder(boolean allowDuplicate) {
+        return new Builder(allowDuplicate);
+    }
+
+    public static final class Entry<T> implements Map.Entry<String, Tag<T>> {
+
+        private final String key;
+        private final Tag<T> value;
+
+        private Entry(String key, Tag<T> value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public String getKey() {
+            return this.key;
+        }
+
+        @Override
+        public Tag<T> getValue() {
+            return this.value;
+        }
+
+        @Override
+        public Tag<T> setValue(Tag<T> value) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public static final class Builder {
+        private final NavigableMap<String, List<Entry<?>>> entryMap;
+        private final List<Entry<?>> entries;
+
+        private final boolean allowDuplicate;
+
+        private Builder(boolean allowDuplicate) {
+            this.entryMap = new TreeMap<>();
+            this.entries = new ArrayList<>();
+            this.allowDuplicate = allowDuplicate;
+        }
+
+        public Builder add(String name, Tag<?> tag) {
+            Entry<?> entry = new Entry<>(name, tag);
+            if (!this.entryMap.containsKey(name)) {
+                List<Entry<?>> entries = Collections.singletonList(entry);
+                this.entryMap.put(name, entries);
+                this.entries.add(entry);
+                return this;
+            }
+            if (this.allowDuplicate) {
+                List<Entry<?>> entries = new ArrayList<>(this.entryMap.get(name));
+                this.entryMap.put(name, Collections.unmodifiableList(entries));
+                this.entries.add(entry);
+                entries.add(entry);
+                return this;
+            }
+            throw new IllegalArgumentException("Duplicate tag name: " + name);
+        }
+
+        public CompoundTag build() {
+            if (this.entryMap.isEmpty()) {
+                return CompoundTag.EMPTY;
+            }
+            return new CompoundTag(this.entryMap, this.entries);
+        }
     }
 }

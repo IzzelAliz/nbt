@@ -76,13 +76,6 @@ public abstract class TagValueVisitor {
         return null;
     }
 
-    public TagCompoundVisitor visitNamedCompound(String name) {
-        if (this.visitor != null) {
-            return this.visitor.visitNamedCompound(name);
-        }
-        return null;
-    }
-
     public void visitIntArray(int[] ints) {
         if (this.visitor != null) {
             this.visitor.visitIntArray(ints);

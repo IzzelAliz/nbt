@@ -18,9 +18,13 @@ import java.util.zip.GZIPInputStream;
 public class NbtReader implements Closeable {
 
     private final DataInputStream data;
+    private final TagType tagType;
+    private final String name;
 
-    public NbtReader(InputStream stream) {
+    public NbtReader(InputStream stream) throws IOException {
         this.data = stream instanceof DataInputStream ? (DataInputStream) stream : new DataInputStream(stream);
+        this.tagType = nextType();
+        this.name = nextString();
     }
 
     public NbtReader(InputStream stream, boolean gzip) throws IOException {
@@ -28,7 +32,7 @@ public class NbtReader implements Closeable {
     }
 
     public void accept(TagValueVisitor visitor) throws IOException {
-        this.read(new ValueContext(visitor, nextType(), nextString()));
+        this.read(new ValueContext(visitor, this.tagType));
     }
 
     @Override
@@ -36,10 +40,18 @@ public class NbtReader implements Closeable {
         this.data.close();
     }
 
-    public CompoundTag readAsTag() throws IOException {
+    public CompoundTag.Entry<?> toCompoundTagEntry() throws IOException {
         TagReader reader = new TagReader();
         this.accept(reader);
-        return (CompoundTag) reader.getTag();
+        return CompoundTag.entry(this.name, reader.getTag());
+    }
+
+    public CompoundTag toCompoundTag() throws IOException {
+        return (CompoundTag) this.toCompoundTagEntry().getValue();
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     private void read(ValueContext initContext) throws IOException {
@@ -108,12 +120,7 @@ public class NbtReader implements Closeable {
                         break;
                     }
                     case COMPOUND: {
-                        String name = ((ValueContext) context).tagName;
-                        if (name != null) {
-                            stack[pointer++] = new CompoundContext(tagVisitor.visitNamedCompound(name));
-                        } else {
-                            stack[pointer++] = new CompoundContext(tagVisitor.visitCompound());
-                        }
+                        stack[pointer++] = new CompoundContext(tagVisitor.visitCompound());
                         break;
                     }
                     case INT_ARRAY: {
@@ -159,7 +166,7 @@ public class NbtReader implements Closeable {
                     if (++pointer >= stack.length) {
                         stack = Arrays.copyOf(stack, stack.length * 2);
                     }
-                    stack[pointer++] = new ValueContext(tagVisitor.visitValue(), ((ListContext) context).tagType, null);
+                    stack[pointer++] = new ValueContext(tagVisitor.visitValue(), ((ListContext) context).tagType);
                 }
             } else if (context instanceof CompoundContext) {
                 TagCompoundVisitor tagVisitor = ((CompoundContext) context).tagVisitor;
@@ -170,7 +177,7 @@ public class NbtReader implements Closeable {
                     if (++pointer >= stack.length) {
                         stack = Arrays.copyOf(stack, stack.length * 2);
                     }
-                    stack[pointer++] = new ValueContext(tagVisitor.visit(nextString()), tagType, null);
+                    stack[pointer++] = new ValueContext(tagVisitor.visit(nextString()), tagType);
                 }
             }
         }
@@ -192,12 +199,10 @@ public class NbtReader implements Closeable {
     }
 
     private static final class ValueContext {
-        private final String tagName;
         private final TagType tagType;
         private final TagValueVisitor tagVisitor;
 
-        private ValueContext(TagValueVisitor tagVisitor, TagType tagType, String tagName) {
-            this.tagName = tagName;
+        private ValueContext(TagValueVisitor tagVisitor, TagType tagType) {
             this.tagType = tagType;
             this.tagVisitor = tagVisitor;
         }
