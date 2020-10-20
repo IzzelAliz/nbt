@@ -78,6 +78,10 @@ public final class CompoundTag extends Tag<List<CompoundTag.Entry<?>>> {
         return new Entry<>(name, tag);
     }
 
+    public static CompoundTag empty() {
+        return EMPTY;
+    }
+
     public static Builder builder() {
         return new Builder(false);
     }
