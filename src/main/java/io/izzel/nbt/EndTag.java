@@ -4,9 +4,9 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 public final class EndTag extends Tag<Void> {
 
-    public static final EndTag INSTANCE = new EndTag();
+    private static final EndTag INSTANCE = new EndTag();
 
-    public EndTag() {
+    private EndTag() {
         super(TagType.END);
     }
 
@@ -23,5 +23,9 @@ public final class EndTag extends Tag<Void> {
     @Override
     public String toString() {
         return "";
+    }
+
+    public static EndTag of() {
+        return INSTANCE;
     }
 }

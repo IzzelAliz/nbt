@@ -37,12 +37,12 @@ public class TagReader extends TagValueVisitor {
 
     @Override
     public void visitEnd() {
-        this.setTag(new EndTag());
+        this.setTag(EndTag.of());
     }
 
     @Override
     public void visitByte(byte b) {
-        this.setTag(new ByteTag(b));
+        this.setTag(ByteTag.of(b));
     }
 
     @Override

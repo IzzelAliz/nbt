@@ -17,6 +17,20 @@ import static org.junit.Assert.*;
 
 public class NbtTest {
     @Test
+    public void testBasic() {
+        EndTag endTag = EndTag.of();
+        assertSame(endTag, EndTag.of());
+        assertNull(endTag.getValue());
+        assertEquals(endTag.toString(), "");
+
+        ByteTag byteTag = ByteTag.of((byte) 42);
+        assertSame(byteTag, ByteTag.of((byte) 42));
+        assertEquals(byteTag.getByte(), (byte) 42);
+        assertEquals(byteTag.getValue(), Byte.valueOf((byte) 42));
+        assertEquals(byteTag.toString(), "42b");
+    }
+
+    @Test
     public void testGzip() throws IOException {
         byte[] bytes = Base64.getDecoder().decode("H4sIAAAAAAAAAO1XzWtk" +
                 "xxGv0Xxo3kgjjVba4N01JE5CIGDW3njXhISw8yXJskeW0Gi9a2NY98yrmWnU7/Vzdz/JEwIm93zc" +
