@@ -47,17 +47,17 @@ public class TagReader extends TagValueVisitor {
 
     @Override
     public void visitShort(short s) {
-        this.setTag(new ShortTag(s));
+        this.setTag(ShortTag.of(s));
     }
 
     @Override
     public void visitInt(int i) {
-        this.setTag(new IntTag(i));
+        this.setTag(IntTag.of(i));
     }
 
     @Override
     public void visitLong(long l) {
-        this.setTag(new LongTag(l));
+        this.setTag(LongTag.of(l));
     }
 
     @Override

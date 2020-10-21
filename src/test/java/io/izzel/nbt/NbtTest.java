@@ -17,24 +17,72 @@ import static org.junit.Assert.*;
 
 public class NbtTest {
     @Test
-    public void testBasic() {
+    public void testEnd() {
         EndTag endTag = EndTag.of();
-        assertSame(endTag, EndTag.of());
         assertNull(endTag.getValue());
-        assertEquals(endTag.toString(), "");
+    }
 
+    @Test
+    public void testInt() {
+        IntTag intTag = IntTag.of(42);
+        assertEquals(intTag.getInt(), 42);
+        assertEquals(intTag.getValue(), Integer.valueOf(42));
+    }
+
+    @Test
+    public void testLong() {
+        LongTag longTag = LongTag.of(42L);
+        assertEquals(longTag.getLong(), 42L);
+        assertEquals(longTag.getValue(), Long.valueOf(42L));
+    }
+
+    @Test
+    public void testByte() {
         ByteTag byteTag = ByteTag.of((byte) 42);
-        assertSame(byteTag, ByteTag.of((byte) 42));
         assertEquals(byteTag.getByte(), (byte) 42);
         assertEquals(byteTag.getValue(), Byte.valueOf((byte) 42));
-        assertEquals(byteTag.toString(), "42b");
+    }
 
+    @Test
+    public void testBoolean() {
         assertTrue(ByteTag.of(true).getBoolean());
         assertFalse(ByteTag.of(false).getBoolean());
         assertTrue(ByteTag.of((byte) 1).getBoolean());
         assertFalse(ByteTag.of((byte) 0).getBoolean());
         assertEquals(ByteTag.of(true).getByte(), (byte) 1);
         assertEquals(ByteTag.of(false).getByte(), (byte) 0);
+    }
+
+    @Test
+    public void testShort() {
+        ShortTag shortTag = ShortTag.of((short) 42);
+        assertEquals(shortTag.getShort(), (short) 42);
+        assertEquals(shortTag.getValue(), Short.valueOf((short) 42));
+    }
+
+    @Test
+    public void testCache() {
+        assertSame(EndTag.of(), EndTag.of());
+        assertSame(IntTag.of(42), IntTag.of(42));
+        assertSame(LongTag.of(42L), LongTag.of(42L));
+        assertSame(ByteTag.of((byte) 42), ByteTag.of((byte) 42));
+        assertSame(ShortTag.of((short) 42), ShortTag.of((short) 42));
+
+        assertNotSame(IntTag.of(42 * 42), IntTag.of(42 * 42));
+        assertNotSame(IntTag.of(42 * -42), IntTag.of(42 * -42));
+        assertNotSame(LongTag.of(42L * 42L), LongTag.of(42L * 42L));
+        assertNotSame(LongTag.of(42L * -42L), LongTag.of(42L * -42L));
+        assertNotSame(ShortTag.of((short) (42 * -42)), ShortTag.of((short) (42 * -42)));
+        assertNotSame(ShortTag.of((short) (42 * -42)), ShortTag.of((short) (42 * -42)));
+    }
+
+    @Test
+    public void testToString() {
+        assertEquals(EndTag.of().toString(), "");
+        assertEquals(IntTag.of(42).toString(), "42");
+        assertEquals(LongTag.of(42L).toString(), "42l");
+        assertEquals(ByteTag.of((byte) 42).toString(), "42b");
+        assertEquals(ShortTag.of((short) 42).toString(), "42s");
     }
 
     @Test
