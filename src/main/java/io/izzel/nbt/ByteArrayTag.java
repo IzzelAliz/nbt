@@ -21,7 +21,7 @@ public final class ByteArrayTag extends Tag<ImmutableBytes> {
 
     @Override
     public void accept(TagValueVisitor visitor) {
-        visitor.visitByteArray(this.value.toByteArray());
+        visitor.visitByteArray(this.value);
     }
 
     @Override

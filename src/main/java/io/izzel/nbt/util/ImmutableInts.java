@@ -56,7 +56,7 @@ public class ImmutableInts implements Iterable<Integer> {
             int thatLength = ((ImmutableInts) o).intCount;
             if (thatLength == this.intCount) {
                 int[] thatValue = ((ImmutableInts) o).value;
-                if (thatLength == this.value.length) {
+                if (thatLength == this.value.length && thatLength == thatValue.length) {
                     return Arrays.equals(thatValue, this.value);
                 }
                 int end = this.offset + this.intCount;

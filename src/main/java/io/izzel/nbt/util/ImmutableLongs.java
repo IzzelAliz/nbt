@@ -56,7 +56,7 @@ public class ImmutableLongs implements Iterable<Long> {
             int thatLength = ((ImmutableLongs) o).longCount;
             if (thatLength == this.longCount) {
                 long[] thatValue = ((ImmutableLongs) o).value;
-                if (thatLength == this.value.length) {
+                if (thatLength == this.value.length && thatLength == thatValue.length) {
                     return Arrays.equals(thatValue, this.value);
                 }
                 int end = this.offset + this.longCount;

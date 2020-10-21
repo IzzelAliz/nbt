@@ -71,7 +71,7 @@ public class TagReader extends TagValueVisitor {
     }
 
     @Override
-    public void visitByteArray(byte[] bytes) {
+    public void visitByteArray(ImmutableBytes bytes) {
         this.setTag(ByteArrayTag.of(bytes));
     }
 
@@ -103,12 +103,12 @@ public class TagReader extends TagValueVisitor {
     }
 
     @Override
-    public void visitIntArray(int[] ints) {
+    public void visitIntArray(ImmutableInts ints) {
         this.setTag(IntArrayTag.of(ints));
     }
 
     @Override
-    public void visitLongArray(long[] longs) {
+    public void visitLongArray(ImmutableLongs longs) {
         this.setTag(LongArrayTag.of(longs));
     }
 

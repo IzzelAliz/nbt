@@ -9,6 +9,9 @@ import java.io.Closeable;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPOutputStream;
 
@@ -121,12 +124,20 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
     }
 
     @Override
-    public void visitByteArray(byte[] bytes) {
+    public void visitByteArray(ImmutableBytes bytes) {
         try {
             if (tagType) data.write(7);
             this.maybeWriteName();
-            data.writeInt(bytes.length);
-            data.write(bytes, 0, bytes.length);
+            int len = bytes.size();
+            data.writeInt(len);
+            byte[] bufferArray = new byte[8192];
+            ByteBuffer buffer = ByteBuffer.wrap(bufferArray);
+            for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
+                 (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
+                buffer.put(ImmutableBytes.slice(bytes, offset, bufferStep).toByteArray());
+                data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                buffer.rewind();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -168,13 +179,19 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
     }
 
     @Override
-    public void visitIntArray(int[] ints) {
+    public void visitIntArray(ImmutableInts ints) {
         try {
             if (tagType) data.write(11);
             this.maybeWriteName();
-            data.writeInt(ints.length);
-            for (int i : ints) {
-                data.writeInt(i);
+            int len = ints.size();
+            data.writeInt(len);
+            byte[] bufferArray = new byte[8192];
+            IntBuffer buffer = ByteBuffer.wrap(bufferArray).asIntBuffer();
+            for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
+                 (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
+                buffer.put(ImmutableInts.slice(ints, offset, bufferStep).toIntArray());
+                data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                buffer.rewind();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -182,13 +199,19 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
     }
 
     @Override
-    public void visitLongArray(long[] longs) {
+    public void visitLongArray(ImmutableLongs longs) {
         try {
             if (tagType) data.write(12);
             this.maybeWriteName();
-            data.writeInt(longs.length);
-            for (long l : longs) {
-                data.writeLong(l);
+            int len = longs.size();
+            data.writeInt(len);
+            byte[] bufferArray = new byte[8192];
+            LongBuffer buffer = ByteBuffer.wrap(bufferArray).asLongBuffer();
+            for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
+                 (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
+                buffer.put(ImmutableLongs.slice(longs, offset, bufferStep).toLongArray());
+                data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                buffer.rewind();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

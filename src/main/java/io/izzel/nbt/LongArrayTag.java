@@ -21,7 +21,7 @@ public final class LongArrayTag extends Tag<ImmutableLongs> {
 
     @Override
     public void accept(TagValueVisitor visitor) {
-        visitor.visitLongArray(this.value.toLongArray());
+        visitor.visitLongArray(this.value);
     }
 
     @Override

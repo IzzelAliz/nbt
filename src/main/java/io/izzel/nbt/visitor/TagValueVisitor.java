@@ -1,5 +1,9 @@
 package io.izzel.nbt.visitor;
 
+import io.izzel.nbt.util.ImmutableBytes;
+import io.izzel.nbt.util.ImmutableInts;
+import io.izzel.nbt.util.ImmutableLongs;
+
 public abstract class TagValueVisitor {
 
     protected final TagValueVisitor visitor;
@@ -50,7 +54,7 @@ public abstract class TagValueVisitor {
         }
     }
 
-    public void visitByteArray(byte[] bytes) {
+    public void visitByteArray(ImmutableBytes bytes) {
         if (this.visitor != null) {
             this.visitor.visitByteArray(bytes);
         }
@@ -76,13 +80,13 @@ public abstract class TagValueVisitor {
         return null;
     }
 
-    public void visitIntArray(int[] ints) {
+    public void visitIntArray(ImmutableInts ints) {
         if (this.visitor != null) {
             this.visitor.visitIntArray(ints);
         }
     }
 
-    public void visitLongArray(long[] longs) {
+    public void visitLongArray(ImmutableLongs longs) {
         if (this.visitor != null) {
             this.visitor.visitLongArray(longs);
         }

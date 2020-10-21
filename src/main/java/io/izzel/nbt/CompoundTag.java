@@ -114,6 +114,16 @@ public final class CompoundTag extends Tag<List<CompoundTag.Entry<?>>> {
         public Tag<T> setValue(Tag<T> value) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof Entry && this.key.equals(((Entry<?>) o).key) && this.value.equals(((Entry<?>) o).value);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * this.key.hashCode() + this.value.hashCode();
+        }
     }
 
     public static final class Builder {

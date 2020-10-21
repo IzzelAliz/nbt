@@ -5,7 +5,12 @@ import io.izzel.nbt.util.NbtWriter;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
@@ -168,6 +173,30 @@ public class NbtTest {
                 CompoundTag newCompoundTag = reader.toCompoundTag();
                 ListTag newTag = (ListTag) newCompoundTag.get("List");
                 assertEquals(newTag, tag);
+            }
+        }
+    }
+
+    @Test
+    public void testLargeArrays() throws IOException {
+        byte[] bytes = new byte[0xFF];
+        new Random(42L * 42L).nextBytes(bytes);
+        CompoundTag compoundTag = CompoundTag.builder()
+                .add("Bytes", ByteArrayTag.of(ByteBuffer.wrap(bytes)))
+                .add("Ints", IntArrayTag.of(ByteBuffer.wrap(bytes).asIntBuffer()))
+                .add("Longs", LongArrayTag.of(ByteBuffer.wrap(bytes).asLongBuffer())).build();
+
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            try (NbtWriter writer = new NbtWriter(stream, true)) {
+                compoundTag.accept(writer);
+            }
+            bytes = stream.toByteArray();
+        }
+
+        try (ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
+            try (NbtReader reader = new NbtReader(stream, true)) {
+                CompoundTag newCompoundTag = reader.toCompoundTag();
+                assertEquals(newCompoundTag, compoundTag);
             }
         }
     }

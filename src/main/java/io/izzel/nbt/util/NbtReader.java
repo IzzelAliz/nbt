@@ -10,6 +10,9 @@ import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,14 +97,17 @@ public class NbtReader implements Closeable {
                     case BYTE_ARRAY: {
                         int len = data.readInt();
                         if (len >= 0 && len <= 0x7FFFFFF7) {
-                            byte[] bytes = new byte[7];
-                            int offset = 0;
-                            do {
-                                bytes = Arrays.copyOf(bytes, Math.min(bytes.length * 2 + 1, len));
-                                data.readFully(bytes, offset, bytes.length - offset);
-                                offset = bytes.length;
-                            } while (offset < len);
-                            tagVisitor.visitByteArray(bytes);
+                            byte[] bufferArray = new byte[8192];
+                            ByteBuffer buffer = ByteBuffer.wrap(bufferArray);
+                            ImmutableBytes.Builder builder = ImmutableBytes.builder();
+                            for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
+                                 (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
+                                this.data.readFully(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                                buffer.limit(bufferStep);
+                                builder.add(buffer);
+                                buffer.clear();
+                            }
+                            tagVisitor.visitByteArray(builder.build());
                             break;
                         }
                         throw new IOException("Size exceeds " + 0x7FFFFFF7 + ", got " + (len & 0xFFFFFFFFL));
@@ -126,16 +132,17 @@ public class NbtReader implements Closeable {
                     case INT_ARRAY: {
                         int len = data.readInt();
                         if (len >= 0 && len <= 0x7FFFFFF7) {
-                            int[] ints = new int[7];
-                            int offset = 0;
-                            do {
-                                ints = Arrays.copyOf(ints, Math.min(ints.length * 2 + 1, len));
-                                for (int i = offset, size = ints.length; i < size; ++i) {
-                                    ints[i] = data.readInt();
-                                }
-                                offset = ints.length;
-                            } while (offset < len);
-                            tagVisitor.visitIntArray(ints);
+                            byte[] bufferArray = new byte[8192];
+                            ImmutableInts.Builder builder = ImmutableInts.builder();
+                            IntBuffer buffer = ByteBuffer.wrap(bufferArray).asIntBuffer();
+                            for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
+                                 (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
+                                this.data.readFully(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                                buffer.limit(bufferStep);
+                                builder.add(buffer);
+                                buffer.clear();
+                            }
+                            tagVisitor.visitIntArray(builder.build());
                             break;
                         }
                         throw new IOException("Size exceeds " + 0x7FFFFFF7 + ", got " + (len & 0xFFFFFFFFL));
@@ -143,16 +150,17 @@ public class NbtReader implements Closeable {
                     case LONG_ARRAY: {
                         int len = data.readInt();
                         if (len >= 0 && len <= 0x7FFFFFF7) {
-                            long[] longs = new long[7];
-                            int offset = 0;
-                            do {
-                                longs = Arrays.copyOf(longs, Math.min(longs.length * 2 + 1, len));
-                                for (int i = offset, size = longs.length; i < size; ++i) {
-                                    longs[i] = data.readLong();
-                                }
-                                offset = longs.length;
-                            } while (offset < len);
-                            tagVisitor.visitLongArray(longs);
+                            byte[] bufferArray = new byte[8192];
+                            ImmutableLongs.Builder builder = ImmutableLongs.builder();
+                            LongBuffer buffer = ByteBuffer.wrap(bufferArray).asLongBuffer();
+                            for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
+                                 (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
+                                this.data.readFully(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                                buffer.limit(bufferStep);
+                                builder.add(buffer);
+                                buffer.clear();
+                            }
+                            tagVisitor.visitLongArray(builder.build());
                             break;
                         }
                         throw new IOException("Size exceeds " + 0x7FFFFFF7 + ", got " + (len & 0xFFFFFFFFL));

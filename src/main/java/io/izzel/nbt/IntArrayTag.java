@@ -21,7 +21,7 @@ public final class IntArrayTag extends Tag<ImmutableInts> {
 
     @Override
     public void accept(TagValueVisitor visitor) {
-        visitor.visitIntArray(this.value.toIntArray());
+        visitor.visitIntArray(this.value);
     }
 
     @Override

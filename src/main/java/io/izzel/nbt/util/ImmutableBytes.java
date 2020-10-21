@@ -56,7 +56,7 @@ public class ImmutableBytes implements Iterable<Byte> {
             int thatLength = ((ImmutableBytes) o).byteCount;
             if (thatLength == this.byteCount) {
                 byte[] thatValue = ((ImmutableBytes) o).value;
-                if (thatLength == this.value.length) {
+                if (thatLength == this.value.length && thatLength == thatValue.length) {
                     return Arrays.equals(thatValue, this.value);
                 }
                 int end = this.offset + this.byteCount;
