@@ -179,7 +179,7 @@ public class NbtTest {
 
     @Test
     public void testLargeArrays() throws IOException {
-        byte[] bytes = new byte[0xFF];
+        byte[] bytes = new byte[0x7FF7];
         new Random(42L * 42L).nextBytes(bytes);
         CompoundTag compoundTag = CompoundTag.builder()
                 .add("Bytes", ByteArrayTag.of(ByteBuffer.wrap(bytes)))
