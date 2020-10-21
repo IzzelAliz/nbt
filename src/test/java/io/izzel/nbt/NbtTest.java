@@ -183,7 +183,7 @@ public class NbtTest {
     private byte[] writeHugeByteArrayToFileAndDigest(Path file, MessageDigest digest) throws IOException {
         byte[] bytes = new byte[0x7FFFFFF7];
         new Random(42L * 42L).nextBytes(bytes);
-        ByteArrayTag byteArrayTag = new ByteArrayTag(bytes);
+        ByteArrayTag byteArrayTag = ByteArrayTag.of(bytes);
         CompoundTag compoundTag = CompoundTag.builder().add("Bytes", byteArrayTag).build();
         try (OutputStream stream = Files.newOutputStream(file); NbtWriter writer = new NbtWriter(stream)) {
             compoundTag.accept(writer);
@@ -193,7 +193,7 @@ public class NbtTest {
 
     private byte[] readHugeByteArrayToFileAndDigest(Path file, MessageDigest digest) throws IOException {
         try (InputStream stream = Files.newInputStream(file); NbtReader reader = new NbtReader(stream)) {
-            return digest.digest(((ByteArrayTag) reader.toCompoundTag().get("Bytes")).getValue());
+            return digest.digest(((ByteArrayTag) reader.toCompoundTag().get("Bytes")).getValue().toByteArray());
         }
     }
 }

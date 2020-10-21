@@ -1,48 +1,53 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.ImmutableBytes;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.util.Arrays;
-import java.util.StringJoiner;
+import java.nio.ByteBuffer;
 
-public final class ByteArrayTag extends Tag<byte[]> {
+public final class ByteArrayTag extends Tag<ImmutableBytes> {
 
-    private final int hash;
+    private final ImmutableBytes value;
 
-    private final byte[] value;
-
-    public ByteArrayTag(byte[] value) {
+    private ByteArrayTag(ImmutableBytes bytes) {
         super(TagType.BYTE_ARRAY);
-        this.hash = Arrays.hashCode(value);
-        this.value = Arrays.copyOf(value, value.length);
+        this.value = bytes;
     }
 
     @Override
-    public byte[] getValue() {
-        return Arrays.copyOf(value, value.length);
+    public ImmutableBytes getValue() {
+        return this.value;
     }
 
     @Override
     public void accept(TagValueVisitor visitor) {
-        visitor.visitByteArray(this.value);
+        visitor.visitByteArray(this.value.toByteArray());
     }
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(",", "[B:", "]");
-        for (byte b : value) {
-            joiner.add(String.valueOf(b));
-        }
-        return joiner.toString();
+        return this.value.toString("[B:", ",", "]");
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ByteArrayTag && Arrays.equals(((ByteArrayTag) o).value, value);
+        return o instanceof ByteArrayTag && this.value.equals(((ByteArrayTag) o).value);
     }
 
     @Override
     public int hashCode() {
-        return this.hash;
+        return this.value.hashCode();
+    }
+
+    public static ByteArrayTag of(byte[] bytes) {
+        return new ByteArrayTag(ImmutableBytes.builder(bytes.length).add(bytes).build());
+    }
+
+    public static ByteArrayTag of(ByteBuffer buffer) {
+        return new ByteArrayTag(ImmutableBytes.builder(buffer.remaining()).add(buffer).build());
+    }
+
+    public static ByteArrayTag of(ImmutableBytes bytes) {
+        return new ByteArrayTag(bytes);
     }
 }

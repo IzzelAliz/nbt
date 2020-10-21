@@ -1,48 +1,53 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.ImmutableLongs;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.util.Arrays;
-import java.util.StringJoiner;
+import java.nio.LongBuffer;
 
-public final class LongArrayTag extends Tag<long[]> {
+public final class LongArrayTag extends Tag<ImmutableLongs> {
 
-    private final int hash;
+    private final ImmutableLongs value;
 
-    private final long[] value;
-
-    public LongArrayTag(long[] value) {
+    private LongArrayTag(ImmutableLongs value) {
         super(TagType.LONG_ARRAY);
-        this.hash = Arrays.hashCode(value);
-        this.value = Arrays.copyOf(value, value.length);
+        this.value = value;
     }
 
     @Override
-    public long[] getValue() {
-        return Arrays.copyOf(value, value.length);
+    public ImmutableLongs getValue() {
+        return this.value;
     }
 
     @Override
     public void accept(TagValueVisitor visitor) {
-        visitor.visitLongArray(this.value);
+        visitor.visitLongArray(this.value.toLongArray());
     }
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(",", "[L:", "]");
-        for (long l : value) {
-            joiner.add(String.valueOf(l));
-        }
-        return joiner.toString();
+        return this.value.toString("[L:", ",", "]");
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof LongArrayTag && Arrays.equals(((LongArrayTag) o).value, value);
+        return o instanceof LongArrayTag && this.value.equals(((LongArrayTag) o).value);
     }
 
     @Override
     public int hashCode() {
-        return this.hash;
+        return this.value.hashCode();
+    }
+
+    public static LongArrayTag of(long[] longs) {
+        return new LongArrayTag(ImmutableLongs.builder(longs.length).add(longs).build());
+    }
+
+    public static LongArrayTag of(LongBuffer buffer) {
+        return new LongArrayTag(ImmutableLongs.builder(buffer.remaining()).add(buffer).build());
+    }
+
+    public static LongArrayTag of(ImmutableLongs longs) {
+        return new LongArrayTag(longs);
     }
 }

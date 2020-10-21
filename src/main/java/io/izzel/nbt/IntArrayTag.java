@@ -1,48 +1,53 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.ImmutableInts;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.util.Arrays;
-import java.util.StringJoiner;
+import java.nio.IntBuffer;
 
-public final class IntArrayTag extends Tag<int[]> {
+public final class IntArrayTag extends Tag<ImmutableInts> {
 
-    private final int hash;
+    private final ImmutableInts value;
 
-    private final int[] value;
-
-    public IntArrayTag(int[] value) {
+    private IntArrayTag(ImmutableInts value) {
         super(TagType.INT_ARRAY);
-        this.hash = Arrays.hashCode(value);
-        this.value = Arrays.copyOf(value, value.length);
+        this.value = value;
     }
 
     @Override
-    public int[] getValue() {
-        return Arrays.copyOf(value, value.length);
+    public ImmutableInts getValue() {
+        return this.value;
     }
 
     @Override
     public void accept(TagValueVisitor visitor) {
-        visitor.visitIntArray(this.value);
+        visitor.visitIntArray(this.value.toIntArray());
     }
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(",", "[I:", "]");
-        for (int i : value) {
-            joiner.add(String.valueOf(i));
-        }
-        return joiner.toString();
+        return this.value.toString("[I:", ",", "]");
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof IntArrayTag && Arrays.equals(((IntArrayTag) o).value, value);
+        return o instanceof IntArrayTag && this.value.equals(((IntArrayTag) o).value);
     }
 
     @Override
     public int hashCode() {
-        return this.hash;
+        return this.value.hashCode();
+    }
+
+    public static IntArrayTag of(int[] ints) {
+        return new IntArrayTag(ImmutableInts.builder(ints.length).add(ints).build());
+    }
+
+    public static IntArrayTag of(IntBuffer buffer) {
+        return new IntArrayTag(ImmutableInts.builder(buffer.remaining()).add(buffer).build());
+    }
+
+    public static IntArrayTag of(ImmutableInts ints) {
+        return new IntArrayTag(ints);
     }
 }
