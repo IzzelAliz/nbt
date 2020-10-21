@@ -21,6 +21,10 @@ public final class ByteTag extends Tag<Byte> {
         return this.value;
     }
 
+    public boolean getBoolean() {
+        return this.value != 0;
+    }
+
     @Override
     public Byte getValue() {
         return this.value;
@@ -34,6 +38,10 @@ public final class ByteTag extends Tag<Byte> {
     @Override
     public String toString() {
         return value + "b";
+    }
+
+    public static ByteTag of(boolean b) {
+        return CACHE[(b ? 1 : 0) - Byte.MIN_VALUE];
     }
 
     public static ByteTag of(byte b) {

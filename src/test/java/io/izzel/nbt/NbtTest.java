@@ -28,6 +28,13 @@ public class NbtTest {
         assertEquals(byteTag.getByte(), (byte) 42);
         assertEquals(byteTag.getValue(), Byte.valueOf((byte) 42));
         assertEquals(byteTag.toString(), "42b");
+
+        assertTrue(ByteTag.of(true).getBoolean());
+        assertFalse(ByteTag.of(false).getBoolean());
+        assertTrue(ByteTag.of((byte) 1).getBoolean());
+        assertFalse(ByteTag.of((byte) 0).getBoolean());
+        assertEquals(ByteTag.of(true).getByte(), (byte) 1);
+        assertEquals(ByteTag.of(false).getByte(), (byte) 0);
     }
 
     @Test
