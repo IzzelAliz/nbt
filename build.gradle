@@ -16,8 +16,8 @@ dependencies {
 
 test {
     useJUnit()
-    minHeapSize '12G'
-    maxHeapSize '12G'
+    minHeapSize '6G'
+    maxHeapSize '6G'
 }
 
 publishing {

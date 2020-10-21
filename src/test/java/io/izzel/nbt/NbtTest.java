@@ -8,6 +8,8 @@ import org.junit.Test;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Random;
 
@@ -73,30 +75,6 @@ public class NbtTest {
     }
 
     @Test
-    public void testHugeByteArray() throws IOException {
-        Random random = new Random(42L);
-
-        byte[] bytes = new byte[0x7FFFFFF7];
-        random.nextBytes(bytes);
-
-        ByteArrayTag byteArrayTag = new ByteArrayTag(bytes);
-        CompoundTag compoundTag = CompoundTag.builder().add("Bytes", byteArrayTag).build();
-
-        Path tmp = Files.createTempFile("io.izzel.nbt.", ".tmp");
-
-        System.gc();
-
-        try (OutputStream stream = Files.newOutputStream(tmp); NbtWriter writer = new NbtWriter(stream)) {
-            compoundTag.accept(writer);
-        }
-
-        try (InputStream stream = Files.newInputStream(tmp); NbtReader reader = new NbtReader(stream)) {
-            assertEquals(reader.getName(), "");
-            assertArrayEquals(((ByteArrayTag) reader.toCompoundTag().get("Bytes")).getValue(), bytes);
-        }
-    }
-
-    @Test
     @Ignore("not correctly implemented yet")
     public void testDeepRecursive() throws IOException {
         ListTag tag = ListTag.empty();
@@ -122,6 +100,31 @@ public class NbtTest {
                 ListTag newTag = (ListTag) newCompoundTag.get("List");
                 assertEquals(newTag, tag);
             }
+        }
+    }
+
+    @Test
+    public void testHugeByteArray() throws IOException, GeneralSecurityException {
+        Path tmp = Files.createTempFile("io.izzel.nbt.", ".tmp");
+        MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+        byte[] digest = writeHugeByteArrayToFileAndDigest(tmp, sha256);
+        assertArrayEquals(digest, readHugeByteArrayToFileAndDigest(tmp, sha256));
+    }
+
+    private byte[] writeHugeByteArrayToFileAndDigest(Path file, MessageDigest digest) throws IOException {
+        byte[] bytes = new byte[0x7FFFFFF7];
+        new Random(42L * 42L).nextBytes(bytes);
+        ByteArrayTag byteArrayTag = new ByteArrayTag(bytes);
+        CompoundTag compoundTag = CompoundTag.builder().add("Bytes", byteArrayTag).build();
+        try (OutputStream stream = Files.newOutputStream(file); NbtWriter writer = new NbtWriter(stream)) {
+            compoundTag.accept(writer);
+            return digest.digest(bytes);
+        }
+    }
+
+    private byte[] readHugeByteArrayToFileAndDigest(Path file, MessageDigest digest) throws IOException {
+        try (InputStream stream = Files.newInputStream(file); NbtReader reader = new NbtReader(stream)) {
+            return digest.digest(((ByteArrayTag) reader.toCompoundTag().get("Bytes")).getValue());
         }
     }
 }
