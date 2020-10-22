@@ -5,7 +5,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.nio.LongBuffer;
 
-public final class LongArrayTag extends Tag<ImmutableLongs> {
+public final class LongArrayTag extends Tag {
 
     private final ImmutableLongs value;
 
@@ -14,8 +14,7 @@ public final class LongArrayTag extends Tag<ImmutableLongs> {
         this.value = value;
     }
 
-    @Override
-    public ImmutableLongs getValue() {
+    public ImmutableLongs getLongs() {
         return this.value;
     }
 

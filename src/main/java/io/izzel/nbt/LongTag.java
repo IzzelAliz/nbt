@@ -4,7 +4,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.util.stream.IntStream;
 
-public final class LongTag extends Tag<Long> {
+public final class LongTag extends Tag {
 
     private static final LongTag[] CACHE = IntStream
             .rangeClosed(Byte.MIN_VALUE, Byte.MAX_VALUE)
@@ -22,18 +22,23 @@ public final class LongTag extends Tag<Long> {
     }
 
     @Override
-    public Long getValue() {
-        return this.value;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitLong(this.value);
     }
 
     @Override
     public String toString() {
-        return value + "l";
+        return this.value + "l";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this || o instanceof LongTag && this.value == ((LongTag) o).value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(this.value);
     }
 
     public static LongTag of(long l) {

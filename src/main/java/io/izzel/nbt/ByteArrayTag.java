@@ -5,7 +5,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.nio.ByteBuffer;
 
-public final class ByteArrayTag extends Tag<ImmutableBytes> {
+public final class ByteArrayTag extends Tag {
 
     private final ImmutableBytes value;
 
@@ -14,8 +14,7 @@ public final class ByteArrayTag extends Tag<ImmutableBytes> {
         this.value = bytes;
     }
 
-    @Override
-    public ImmutableBytes getValue() {
+    public ImmutableBytes getBytes() {
         return this.value;
     }
 
@@ -31,7 +30,7 @@ public final class ByteArrayTag extends Tag<ImmutableBytes> {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ByteArrayTag && this.value.equals(((ByteArrayTag) o).value);
+        return o == this || o instanceof ByteArrayTag && this.value.equals(((ByteArrayTag) o).value);
     }
 
     @Override

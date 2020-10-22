@@ -2,17 +2,16 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public final class StringTag extends Tag<String> {
+public final class StringTag extends Tag {
 
     private final String value;
 
-    public StringTag(String value) {
+    private StringTag(String value) {
         super(TagType.STRING);
         this.value = value;
     }
 
-    @Override
-    public String getValue() {
+    public String getString() {
         return this.value;
     }
 
@@ -26,33 +25,43 @@ public final class StringTag extends Tag<String> {
         return escape(this.value);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        return o == this || o instanceof StringTag && this.value.equals(((StringTag) o).value);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.value.hashCode();
+    }
+
+    public static StringTag of(String s) {
+        return new StringTag(s);
+    }
+
     public static String escape(String s) {
         StringBuilder builder = new StringBuilder(" ");
-        char c0 = 0;
-
+        char backslash = '\\', singleQuote = '\'', doubleQuote = '"';
+        char quotation = 0;
         for (int i = 0; i < s.length(); ++i) {
-            char c1 = s.charAt(i);
-            if (c1 == '\\') {
-                builder.append('\\');
-            } else if (c1 == '"' || c1 == '\'') {
-                if (c0 == 0) {
-                    c0 = (char) (c1 == '"' ? 39 : 34);
+            char current = s.charAt(i);
+            if (current == backslash) {
+                builder.append(backslash);
+            } else if (current == doubleQuote || current == singleQuote) {
+                if (quotation == 0) {
+                    quotation = current == doubleQuote ? singleQuote : doubleQuote;
                 }
-
-                if (c0 == c1) {
-                    builder.append('\\');
+                if (quotation == current) {
+                    builder.append(backslash);
                 }
             }
-
-            builder.append(c1);
+            builder.append(current);
         }
-
-        if (c0 == 0) {
-            c0 = '"';
+        if (quotation == 0) {
+            quotation = doubleQuote;
         }
-
-        builder.setCharAt(0, c0);
-        builder.append(c0);
+        builder.setCharAt(0, quotation);
+        builder.append(quotation);
         return builder.toString();
     }
 }

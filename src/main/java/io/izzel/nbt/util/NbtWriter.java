@@ -282,6 +282,7 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
 
         @Override
         public void visitEnd() {
+            super.visitEnd();
             try {
                 data.write(0);
             } catch (IOException e) {

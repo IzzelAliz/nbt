@@ -21,17 +21,17 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 public class TagWriter extends TagValueVisitor {
 
-    protected Tag<?> tag;
+    protected Tag tag;
 
     public TagWriter() {
         super(null);
     }
 
-    public Tag<?> getTag() {
+    public Tag getTag() {
         return tag;
     }
 
-    protected void setTag(Tag<?> tag) {
+    protected void setTag(Tag tag) {
         this.tag = tag;
     }
 
@@ -62,12 +62,12 @@ public class TagWriter extends TagValueVisitor {
 
     @Override
     public void visitFloat(float f) {
-        this.setTag(new FloatTag(f));
+        this.setTag(FloatTag.of(f));
     }
 
     @Override
     public void visitDouble(double d) {
-        this.setTag(new DoubleTag(d));
+        this.setTag(DoubleTag.of(d));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class TagWriter extends TagValueVisitor {
 
     @Override
     public void visitString(String s) {
-        this.setTag(new StringTag(s));
+        this.setTag(StringTag.of(s));
     }
 
     @Override
@@ -85,7 +85,6 @@ public class TagWriter extends TagValueVisitor {
         return new TagWriter.ListReader() {
             @Override
             public void visitEnd() {
-                super.visitEnd();
                 setTag(builder.build());
             }
         };
@@ -96,7 +95,6 @@ public class TagWriter extends TagValueVisitor {
         return new CompoundReader() {
             @Override
             public void visitEnd() {
-                super.visitEnd();
                 setTag(builder.build());
             }
         };
@@ -140,7 +138,7 @@ public class TagWriter extends TagValueVisitor {
             }
             return new TagWriter() {
                 @Override
-                protected void setTag(Tag<?> tag) {
+                protected void setTag(Tag tag) {
                     super.setTag(tag);
                     builder.add(tag);
                 }
@@ -161,7 +159,7 @@ public class TagWriter extends TagValueVisitor {
         public TagValueVisitor visit(String key) {
             return new TagWriter() {
                 @Override
-                protected void setTag(Tag<?> tag) {
+                protected void setTag(Tag tag) {
                     super.setTag(tag);
                     builder.add(key, tag);
                 }

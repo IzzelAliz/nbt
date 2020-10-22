@@ -4,7 +4,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.util.stream.IntStream;
 
-public final class IntTag extends Tag<Integer> {
+public final class IntTag extends Tag {
 
     private static final IntTag[] CACHE = IntStream
             .rangeClosed(Byte.MIN_VALUE, Byte.MAX_VALUE)
@@ -22,11 +22,6 @@ public final class IntTag extends Tag<Integer> {
     }
 
     @Override
-    public Integer getValue() {
-        return this.value;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitInt(this.value);
     }
@@ -34,6 +29,16 @@ public final class IntTag extends Tag<Integer> {
     @Override
     public String toString() {
         return String.valueOf(value);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this || o instanceof IntTag && this.value == ((IntTag) o).value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(this.value);
     }
 
     public static IntTag of(int i) {

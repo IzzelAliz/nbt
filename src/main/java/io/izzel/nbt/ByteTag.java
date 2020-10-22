@@ -4,7 +4,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.util.stream.IntStream;
 
-public final class ByteTag extends Tag<Byte> {
+public final class ByteTag extends Tag {
 
     private static final ByteTag[] CACHE = IntStream
             .rangeClosed(Byte.MIN_VALUE, Byte.MAX_VALUE)
@@ -26,18 +26,23 @@ public final class ByteTag extends Tag<Byte> {
     }
 
     @Override
-    public Byte getValue() {
-        return this.value;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitByte(this.value);
     }
 
     @Override
     public String toString() {
-        return value + "b";
+        return this.value + "b";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this || o instanceof ByteTag && this.value == ((ByteTag) o).value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Byte.hashCode(this.value);
     }
 
     public static ByteTag of(boolean b) {

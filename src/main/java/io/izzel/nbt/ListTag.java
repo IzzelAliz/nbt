@@ -10,25 +10,25 @@ import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>> {
+public final class ListTag extends Tag implements Iterable<Tag> {
 
     private static final ListTag EMPTY = new ListTag(TagType.END, Collections.emptyList());
 
-    private final List<Tag<?>> value;
+    private final List<Tag> values;
     private final TagType tagType;
 
-    private ListTag(TagType type, List<Tag<?>> value) {
+    private ListTag(TagType type, List<Tag> values) {
         super(TagType.LIST);
         this.tagType = type;
-        this.value = Collections.unmodifiableList(value);
+        this.values = Collections.unmodifiableList(values);
     }
 
     public int size() {
-        return this.value.size();
+        return this.values.size();
     }
 
-    public Tag<?> get(int index) {
-        return this.value.get(index);
+    public Tag get(int index) {
+        return this.values.get(index);
     }
 
     public TagType getTagType() {
@@ -36,33 +36,38 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
     }
 
     @Override
-    public List<Tag<?>> getValue() {
-        return this.value;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         TagListVisitor listVisitor = visitor.visitList();
         listVisitor.visitType(this.tagType);
-        listVisitor.visitLength(this.value.size());
-        for (Tag<?> tag : this.value) {
+        listVisitor.visitLength(this.values.size());
+        for (Tag tag : this.values) {
             tag.accept(listVisitor.visitValue());
         }
         listVisitor.visitEnd();
     }
 
     @Override
-    public Iterator<Tag<?>> iterator() {
-        return this.value.iterator();
+    public Iterator<Tag> iterator() {
+        return this.values.iterator();
     }
 
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(",", "[", "]");
-        for (Tag<?> tag : this.value) {
+        for (Tag tag : this.values) {
             joiner.add(tag.toString());
         }
         return joiner.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this || o instanceof ListTag && this.values.equals(((ListTag) o).values);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.values.hashCode();
     }
 
     public static ListTag empty() {
@@ -78,15 +83,15 @@ public final class ListTag extends Tag<List<Tag<?>>> implements Iterable<Tag<?>>
     }
 
     public static final class Builder {
-        private final List<Tag<?>> values;
+        private final List<Tag> values;
         private TagType tagType;
 
-        private Builder(List<Tag<?>> values, TagType type) {
+        private Builder(List<Tag> values, TagType type) {
             this.values = values;
             this.tagType = type;
         }
 
-        public Builder add(Tag<?> tag) {
+        public Builder add(Tag tag) {
             if (tagType == null) {
                 tagType = tag.getType();
             } else if (tag.getType() != tagType) {

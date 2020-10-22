@@ -4,7 +4,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.util.stream.IntStream;
 
-public final class ShortTag extends Tag<Short> {
+public final class ShortTag extends Tag {
 
     private static final ShortTag[] CACHE = IntStream
             .rangeClosed(Byte.MIN_VALUE, Byte.MAX_VALUE)
@@ -22,18 +22,23 @@ public final class ShortTag extends Tag<Short> {
     }
 
     @Override
-    public Short getValue() {
-        return this.value;
-    }
-
-    @Override
     public void accept(TagValueVisitor visitor) {
         visitor.visitShort(this.value);
     }
 
     @Override
     public String toString() {
-        return value + "s";
+        return this.value + "s";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o == this || o instanceof ShortTag && this.value == ((ShortTag) o).value;
+    }
+
+    @Override
+    public int hashCode() {
+        return Short.hashCode(this.value);
     }
 
     public static ShortTag of(short s) {

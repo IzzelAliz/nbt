@@ -22,30 +22,21 @@ import static org.junit.Assert.*;
 
 public class NbtTest {
     @Test
-    public void testEnd() {
-        EndTag endTag = EndTag.of();
-        assertNull(endTag.getValue());
-    }
-
-    @Test
     public void testInt() {
         IntTag intTag = IntTag.of(42);
         assertEquals(intTag.getInt(), 42);
-        assertEquals(intTag.getValue(), Integer.valueOf(42));
     }
 
     @Test
     public void testLong() {
         LongTag longTag = LongTag.of(42L);
         assertEquals(longTag.getLong(), 42L);
-        assertEquals(longTag.getValue(), Long.valueOf(42L));
     }
 
     @Test
     public void testByte() {
         ByteTag byteTag = ByteTag.of((byte) 42);
         assertEquals(byteTag.getByte(), (byte) 42);
-        assertEquals(byteTag.getValue(), Byte.valueOf((byte) 42));
     }
 
     @Test
@@ -62,7 +53,28 @@ public class NbtTest {
     public void testShort() {
         ShortTag shortTag = ShortTag.of((short) 42);
         assertEquals(shortTag.getShort(), (short) 42);
-        assertEquals(shortTag.getValue(), Short.valueOf((short) 42));
+    }
+
+    @Test
+    public void testFloat() {
+        FloatTag floatTag = FloatTag.of(42.0F);
+        assertEquals(floatTag, FloatTag.of(42.0F));
+        assertEquals(floatTag.getFloat(), 42.0F, 0.0F);
+    }
+
+    @Test
+    public void testDouble() {
+        DoubleTag doubleTag = DoubleTag.of(42.0);
+        assertEquals(doubleTag, DoubleTag.of(42.0));
+        assertEquals(doubleTag.getDouble(), 42.0, 0.0);
+    }
+
+    @Test
+    public void testFloatingComparison() {
+        assertNotEquals(FloatTag.of(0.0F), FloatTag.of(-0.0F));
+        assertNotEquals(DoubleTag.of(0.0D), DoubleTag.of(-0.0D));
+        assertEquals(FloatTag.of(Float.NaN), FloatTag.of(Float.NaN));
+        assertEquals(DoubleTag.of(Double.NaN), DoubleTag.of(Double.NaN));
     }
 
     @Test
@@ -88,6 +100,8 @@ public class NbtTest {
         assertEquals(LongTag.of(42L).toString(), "42l");
         assertEquals(ByteTag.of((byte) 42).toString(), "42b");
         assertEquals(ShortTag.of((short) 42).toString(), "42s");
+        assertEquals(FloatTag.of(42.0F).toString(), "42.0f");
+        assertEquals(DoubleTag.of(42.0D).toString(), "42.0d");
     }
 
     @Test
@@ -222,7 +236,7 @@ public class NbtTest {
 
     private byte[] readHugeByteArrayToFileAndDigest(Path file, MessageDigest digest) throws IOException {
         try (InputStream stream = Files.newInputStream(file); NbtReader reader = new NbtReader(stream)) {
-            return digest.digest(((ByteArrayTag) reader.toCompoundTag().get("Bytes")).getValue().toByteArray());
+            return digest.digest(((ByteArrayTag) reader.toCompoundTag().get("Bytes")).getBytes().toByteArray());
         }
     }
 }

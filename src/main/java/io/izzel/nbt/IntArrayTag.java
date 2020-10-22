@@ -5,7 +5,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.nio.IntBuffer;
 
-public final class IntArrayTag extends Tag<ImmutableInts> {
+public final class IntArrayTag extends Tag {
 
     private final ImmutableInts value;
 
@@ -14,8 +14,7 @@ public final class IntArrayTag extends Tag<ImmutableInts> {
         this.value = value;
     }
 
-    @Override
-    public ImmutableInts getValue() {
+    public ImmutableInts getInts() {
         return this.value;
     }
 
@@ -31,7 +30,7 @@ public final class IntArrayTag extends Tag<ImmutableInts> {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof IntArrayTag && this.value.equals(((IntArrayTag) o).value);
+        return o == this || o instanceof IntArrayTag && this.value.equals(((IntArrayTag) o).value);
     }
 
     @Override
