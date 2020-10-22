@@ -44,7 +44,7 @@ public class NbtReader implements Closeable {
     }
 
     public CompoundTag.Entry<?> toCompoundTagEntry() throws IOException {
-        TagReader reader = new TagReader();
+        TagWriter reader = new TagWriter();
         this.accept(reader);
         return CompoundTag.entry(this.name, reader.getTag());
     }

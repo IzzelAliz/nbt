@@ -19,11 +19,11 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public class TagReader extends TagValueVisitor {
+public class TagWriter extends TagValueVisitor {
 
     protected Tag<?> tag;
 
-    public TagReader() {
+    public TagWriter() {
         super(null);
     }
 
@@ -82,7 +82,7 @@ public class TagReader extends TagValueVisitor {
 
     @Override
     public TagListVisitor visitList() {
-        return new TagReader.ListReader() {
+        return new TagWriter.ListReader() {
             @Override
             public void visitEnd() {
                 super.visitEnd();
@@ -138,7 +138,7 @@ public class TagReader extends TagValueVisitor {
             if (++this.index > this.length) {
                 throw new IndexOutOfBoundsException("Index: " + this.index + ", Size: " + this.length);
             }
-            return new TagReader() {
+            return new TagWriter() {
                 @Override
                 protected void setTag(Tag<?> tag) {
                     super.setTag(tag);
@@ -159,7 +159,7 @@ public class TagReader extends TagValueVisitor {
 
         @Override
         public TagValueVisitor visit(String key) {
-            return new TagReader() {
+            return new TagWriter() {
                 @Override
                 protected void setTag(Tag<?> tag) {
                     super.setTag(tag);
