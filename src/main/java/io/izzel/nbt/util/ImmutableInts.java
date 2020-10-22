@@ -26,7 +26,7 @@ public class ImmutableInts implements Iterable<Integer> {
     }
 
     public int get(int index) {
-        if (index < this.intCount) {
+        if (index >= 0 && index < this.intCount) {
             return this.value[index + this.offset];
         }
         throw new IndexOutOfBoundsException("Index: " + index);

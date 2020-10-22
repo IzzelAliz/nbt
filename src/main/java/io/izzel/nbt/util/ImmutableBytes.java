@@ -26,7 +26,7 @@ public class ImmutableBytes implements Iterable<Byte> {
     }
 
     public byte get(int index) {
-        if (index < this.byteCount) {
+        if (index >= 0 && index < this.byteCount) {
             return this.value[index + this.offset];
         }
         throw new IndexOutOfBoundsException("Index: " + index);

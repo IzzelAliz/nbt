@@ -26,7 +26,7 @@ public class ImmutableLongs implements Iterable<Long> {
     }
 
     public long get(int index) {
-        if (index < this.longCount) {
+        if (index >= 0 && index < this.longCount) {
             return this.value[index + this.offset];
         }
         throw new IndexOutOfBoundsException("Index: " + index);
