@@ -5,10 +5,7 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.io.Closeable;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -18,7 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
-public class NbtWriter extends TagValueVisitor implements Closeable {
+public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
     private final DataOutputStream data;
     private final List<IOException> suppressed;
@@ -37,6 +34,11 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
 
     public NbtWriter(OutputStream stream, boolean gzip, String name) throws IOException {
         this(gzip ? new GZIPOutputStream(stream) : stream, name);
+    }
+
+    @Override
+    public void flush() throws IOException {
+        this.data.flush();
     }
 
     @Override
@@ -279,7 +281,7 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
         }
     }
 
-    private static class ListWriter extends TagListVisitor {
+    private static final class ListWriter extends TagListVisitor {
 
         private final DataOutputStream data;
         private final List<IOException> suppressed;
@@ -318,7 +320,7 @@ public class NbtWriter extends TagValueVisitor implements Closeable {
         }
     }
 
-    private static class CompoundWriter extends TagCompoundVisitor {
+    private static final class CompoundWriter extends TagCompoundVisitor {
 
         private final DataOutputStream data;
         private final List<IOException> suppressed;

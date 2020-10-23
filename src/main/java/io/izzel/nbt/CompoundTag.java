@@ -401,6 +401,10 @@ public final class CompoundTag extends Tag {
 
         public Builder add(Entry<?> entry) {
             String entryName = entry.getKey();
+            if (entry.getValue().getType() == TagType.END) {
+                String escapedName = SIMPLE_KEY.matcher(entryName).matches() ? entryName : StringTag.escape(entryName);
+                throw new IllegalArgumentException("Compound tags do not allow end tag values, name: " + escapedName);
+            }
             if (!this.entryMap.containsKey(entryName)) {
                 List<Entry<?>> entries = Collections.singletonList(entry);
                 this.entryMap.put(entryName, entries);
@@ -414,7 +418,8 @@ public final class CompoundTag extends Tag {
                 entries.add(entry);
                 return this;
             }
-            throw new IllegalArgumentException("Duplicate tag name: " + entryName);
+            String escapedName = SIMPLE_KEY.matcher(entryName).matches() ? entryName : StringTag.escape(entryName);
+            throw new IllegalArgumentException("Duplicate tag names: " + escapedName);
         }
 
         public CompoundTag build() {
