@@ -1,8 +1,14 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.ImmutableBytes;
+import io.izzel.nbt.util.ImmutableInts;
+import io.izzel.nbt.util.ImmutableLongs;
 import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,22 +38,200 @@ public final class CompoundTag extends Tag {
         return this.valueMap.navigableKeySet();
     }
 
-    public boolean contains(String key) {
-        return this.valueMap.containsKey(key);
+    public Tag get(String name, Tag fallback) {
+        List<? extends Entry<?>> entries = this.getEntries(name);
+        return entries.isEmpty() ? fallback : entries.get(entries.size() - 1).getValue();
     }
 
-    public Tag get(String key) {
-        List<? extends Entry<?>> entries = this.getEntries(key);
-        return entries.get(entries.size() - 1).getValue();
+    public Tag getOrDefault(String name) {
+        List<? extends Entry<?>> entries = this.getEntries(name);
+        return entries.isEmpty() ? EndTag.of() : entries.get(entries.size() - 1).getValue();
     }
 
-    public Entry<?> getEntry(String key) {
-        List<? extends Entry<?>> entries = this.getEntries(key);
-        return entries.get(entries.size() - 1);
+    public Tag get(String name, TagType type, Tag fallback) {
+        if (fallback.getType() != type) {
+            String msg = "Expected " + type.getTagName() + " but got " + fallback.getType().getTagName();
+            throw new IllegalArgumentException(msg);
+        }
+        Tag tag = this.get(name, fallback);
+        return tag.getType() != type ? fallback : tag;
     }
 
-    public List<? extends Entry<?>> getEntries(String key) {
-        return this.valueMap.getOrDefault(key, Collections.emptyList());
+    public Tag getOrDefault(String name, TagType type) {
+        Tag tag = this.getOrDefault(name);
+        return tag.getType() != type ? type.getDefault() : tag;
+    }
+
+    public Number getNumber(String name, Number fallback) {
+        Tag tag = this.get(name, EndTag.of());
+        switch (tag.getType()) {
+            case BYTE:
+                return ((ByteTag) tag).getByte();
+            case SHORT:
+                return ((ShortTag) tag).getShort();
+            case INT:
+                return ((IntTag) tag).getInt();
+            case LONG:
+                return ((LongTag) tag).getLong();
+            case FLOAT:
+                return ((FloatTag) tag).getFloat();
+            case DOUBLE:
+                return ((DoubleTag) tag).getDouble();
+            default:
+                return fallback;
+        }
+    }
+
+    public Number getNumberOrDefault(String name) {
+        Tag tag = this.getOrDefault(name);
+        switch (tag.getType()) {
+            case DOUBLE:
+                return ((DoubleTag) tag).getDouble();
+            case FLOAT:
+                return ((FloatTag) tag).getFloat();
+            case LONG:
+                return ((LongTag) tag).getLong();
+            case INT:
+                return ((IntTag) tag).getInt();
+            case SHORT:
+                return ((ShortTag) tag).getShort();
+            case BYTE:
+                return ((ByteTag) tag).getByte();
+            default:
+                return 0;
+        }
+    }
+
+    public boolean getBoolean(String name, boolean fallback) {
+        return this.getNumber(name, fallback ? (byte) 1 : (byte) 0).byteValue() != 0;
+    }
+
+    public boolean getBooleanOrDefault(String name) {
+        return this.getNumberOrDefault(name).byteValue() != 0;
+    }
+
+    public byte getByte(String name, byte fallback) {
+        return this.getNumber(name, fallback).byteValue();
+    }
+
+    public byte getByteOrDefault(String name) {
+        return this.getNumberOrDefault(name).byteValue();
+    }
+
+    public short getShort(String name, short fallback) {
+        return this.getNumber(name, fallback).shortValue();
+    }
+
+    public short getShortOrDefault(String name) {
+        return this.getNumberOrDefault(name).shortValue();
+    }
+
+    public int getInt(String name, int fallback) {
+        return this.getNumber(name, fallback).intValue();
+    }
+
+    public int getIntOrDefault(String name) {
+        return this.getNumberOrDefault(name).intValue();
+    }
+
+    public long getLong(String name, long fallback) {
+        return this.getNumber(name, fallback).longValue();
+    }
+
+    public long getLongOrDefault(String name) {
+        return this.getNumberOrDefault(name).longValue();
+    }
+
+    public float getFloat(String name, float fallback) {
+        return this.getNumber(name, fallback).floatValue();
+    }
+
+    public float getFloatOrDefault(String name) {
+        return this.getNumberOrDefault(name).floatValue();
+    }
+
+    public double getDouble(String name, double fallback) {
+        return this.getNumber(name, fallback).doubleValue();
+    }
+
+    public double getDoubleOrDefault(String name) {
+        return this.getNumberOrDefault(name).doubleValue();
+    }
+
+    public ImmutableBytes getBytes(String name, ImmutableBytes fallback) {
+        return ((ByteArrayTag) this.get(name, TagType.BYTE_ARRAY, ByteArrayTag.of(fallback))).getBytes();
+    }
+
+    public ImmutableBytes getBytesOrDefault(String name) {
+        return ((ByteArrayTag) this.getOrDefault(name, TagType.BYTE_ARRAY)).getBytes();
+    }
+
+    public ImmutableInts getInts(String name, ImmutableInts fallback) {
+        return ((IntArrayTag) this.get(name, TagType.INT_ARRAY, IntArrayTag.of(fallback))).getInts();
+    }
+
+    public ImmutableInts getIntsOrDefault(String name) {
+        return ((IntArrayTag) this.getOrDefault(name, TagType.INT_ARRAY)).getInts();
+    }
+
+    public ImmutableLongs getLongs(String name, ImmutableLongs fallback) {
+        return ((LongArrayTag) this.get(name, TagType.LONG_ARRAY, LongArrayTag.of(fallback))).getLongs();
+    }
+
+    public ImmutableLongs getLongsOrDefault(String name) {
+        return ((LongArrayTag) this.getOrDefault(name, TagType.LONG_ARRAY)).getLongs();
+    }
+
+    public String getString(String name, String fallback) {
+        return ((StringTag) this.get(name, TagType.STRING, StringTag.of(fallback))).getString();
+    }
+
+    public String getStringOrDefault(String name) {
+        return ((StringTag) this.getOrDefault(name, TagType.STRING)).getString();
+    }
+
+    public ListTag getList(String name, ListTag fallback) {
+        return (ListTag) this.get(name, TagType.LIST, fallback);
+    }
+
+    public ListTag getListOrDefault(String name) {
+        return (ListTag) this.getOrDefault(name, TagType.LIST);
+    }
+
+    public ListTag getList(String name, TagType elemType, ListTag fallback) {
+        if (fallback.getElemType() != elemType) {
+            String msg = "Expected " + elemType.getTagName() + " but got " + fallback.getElemType().getTagName();
+            throw new IllegalArgumentException(msg);
+        }
+        ListTag tag = (ListTag) this.get(name, TagType.LIST, fallback);
+        return tag.getElemType() != elemType ? fallback : tag;
+    }
+
+    public ListTag getListOrDefault(String name, TagType elemType) {
+        ListTag tag = (ListTag) this.getOrDefault(name, TagType.LIST);
+        return tag.getElemType() != elemType ? ListTag.builder(elemType).build() : tag;
+    }
+
+    public CompoundTag getCompound(String name, CompoundTag fallback) {
+        return (CompoundTag) this.get(name, TagType.COMPOUND, fallback);
+    }
+
+    public CompoundTag getCompoundOrDefault(String name) {
+        return (CompoundTag) this.getOrDefault(name, TagType.COMPOUND);
+    }
+
+    public Entry<?> getEntry(String name, Entry<?> fallback) {
+        List<? extends Entry<?>> entries = this.getEntries(name);
+        return entries.isEmpty() ? fallback : entries.get(entries.size() - 1);
+    }
+
+    public Entry<?> getEntryOrDefault(String name) {
+        List<? extends Entry<?>> entries = this.getEntries(name);
+        return entries.isEmpty() ? new Entry<>("", EndTag.of()) : entries.get(entries.size() - 1);
+    }
+
+    public List<? extends Entry<?>> getEntries(String name) {
+        return this.valueMap.getOrDefault(name, Collections.emptyList());
     }
 
     @Override
@@ -63,8 +247,8 @@ public final class CompoundTag extends Tag {
     public String toString() {
         StringJoiner joiner = new StringJoiner(",", "{", "}");
         for (Entry<?> entry : this.values) {
-            String key = entry.getKey();
-            joiner.add((SIMPLE_KEY.matcher(key).matches() ? key : StringTag.escape(key)) + ":" + entry.getValue());
+            String name = entry.getKey();
+            joiner.add((SIMPLE_KEY.matcher(name).matches() ? name : StringTag.escape(name)) + ":" + entry.getValue());
         }
         return joiner.toString();
     }
@@ -97,17 +281,17 @@ public final class CompoundTag extends Tag {
 
     public static final class Entry<T> implements Map.Entry<String, Tag> {
 
-        private final String key;
+        private final String name;
         private final Tag value;
 
-        private Entry(String key, Tag value) {
-            this.key = key;
+        private Entry(String name, Tag value) {
+            this.name = name;
             this.value = value;
         }
 
         @Override
         public String getKey() {
-            return this.key;
+            return this.name;
         }
 
         @Override
@@ -122,12 +306,12 @@ public final class CompoundTag extends Tag {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof Entry && this.key.equals(((Entry<?>) o).key) && this.value.equals(((Entry<?>) o).value);
+            return o instanceof Entry && this.name.equals(((Entry<?>) o).name) && this.value.equals(((Entry<?>) o).value);
         }
 
         @Override
         public int hashCode() {
-            return 31 * this.key.hashCode() + this.value.hashCode();
+            return 31 * this.name.hashCode() + this.value.hashCode();
         }
     }
 
@@ -144,21 +328,93 @@ public final class CompoundTag extends Tag {
         }
 
         public Builder add(String name, Tag tag) {
-            Entry<?> entry = new Entry<>(name, tag);
-            if (!this.entryMap.containsKey(name)) {
+            return this.add(new Entry<>(name, tag));
+        }
+
+        public Builder add(String name, boolean b) {
+            return this.add(name, ByteTag.of(b));
+        }
+
+        public Builder add(String name, byte b) {
+            return this.add(name, ByteTag.of(b));
+        }
+
+        public Builder add(String name, short s) {
+            return this.add(name, ShortTag.of(s));
+        }
+
+        public Builder add(String name, int i) {
+            return this.add(name, IntTag.of(i));
+        }
+
+        public Builder add(String name, long l) {
+            return this.add(name, LongTag.of(l));
+        }
+
+        public Builder add(String name, float f) {
+            return this.add(name, FloatTag.of(f));
+        }
+
+        public Builder add(String name, double d) {
+            return this.add(name, DoubleTag.of(d));
+        }
+
+        public Builder add(String name, byte[] bytes) {
+            return this.add(name, ByteArrayTag.of(bytes));
+        }
+
+        public Builder add(String name, ByteBuffer bytes) {
+            return this.add(name, ByteArrayTag.of(bytes));
+        }
+
+        public Builder add(String name, ImmutableBytes bytes) {
+            return this.add(name, ByteArrayTag.of(bytes));
+        }
+
+        public Builder add(String name, int[] ints) {
+            return this.add(name, IntArrayTag.of(ints));
+        }
+
+        public Builder add(String name, IntBuffer ints) {
+            return this.add(name, IntArrayTag.of(ints));
+        }
+
+        public Builder add(String name, ImmutableInts ints) {
+            return this.add(name, IntArrayTag.of(ints));
+        }
+
+        public Builder add(String name, long[] longs) {
+            return this.add(name, LongArrayTag.of(longs));
+        }
+
+        public Builder add(String name, LongBuffer longs) {
+            return this.add(name, LongArrayTag.of(longs));
+        }
+
+        public Builder add(String name, ImmutableLongs longs) {
+            return this.add(name, LongArrayTag.of(longs));
+        }
+
+        public Builder add(String name, String s) {
+            return this.add(name, StringTag.of(s));
+        }
+
+        public Builder add(Entry<?> entry) {
+            String entryName = entry.getKey();
+            if (!this.entryMap.containsKey(entryName)) {
                 List<Entry<?>> entries = Collections.singletonList(entry);
-                this.entryMap.put(name, entries);
+                this.entryMap.put(entryName, entries);
                 this.entries.add(entry);
                 return this;
             }
             if (this.allowDuplicate) {
-                List<Entry<?>> entries = new ArrayList<>(this.entryMap.get(name));
-                this.entryMap.put(name, Collections.unmodifiableList(entries));
+                List<Entry<?>> entries = new ArrayList<>(this.entryMap.get(entryName));
+                this.entryMap.put(entryName, Collections.unmodifiableList(entries));
                 this.entries.add(entry);
                 entries.add(entry);
                 return this;
             }
-            throw new IllegalArgumentException("Duplicate tag name: " + name);
+            throw new IllegalArgumentException("Duplicate tag name: " + entryName);
         }
 
         public CompoundTag build() {
