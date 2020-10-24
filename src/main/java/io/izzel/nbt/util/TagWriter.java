@@ -21,14 +21,14 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 public class TagWriter extends TagValueVisitor {
 
-    protected Tag tag;
+    private Tag tag;
 
     public TagWriter() {
         super(null);
     }
 
     public Tag getTag() {
-        return tag;
+        return this.tag;
     }
 
     protected void setTag(Tag tag) {
@@ -82,20 +82,20 @@ public class TagWriter extends TagValueVisitor {
 
     @Override
     public TagListVisitor visitList() {
-        return new TagWriter.ListReader() {
+        return new ListWriter() {
             @Override
-            public void visitEnd() {
-                setTag(builder.build());
+            protected void setTag(ListTag tag) {
+                TagWriter.this.setTag(tag);
             }
         };
     }
 
     @Override
     public TagCompoundVisitor visitCompound() {
-        return new CompoundReader() {
+        return new CompoundWriter() {
             @Override
-            public void visitEnd() {
-                setTag(builder.build());
+            protected void setTag(CompoundTag tag) {
+                TagWriter.this.setTag(tag);
             }
         };
     }
@@ -110,14 +110,13 @@ public class TagWriter extends TagValueVisitor {
         this.setTag(LongArrayTag.of(longs));
     }
 
-    private static class ListReader extends TagListVisitor {
+    private abstract static class ListWriter extends TagListVisitor {
 
-        ListTag.Builder builder;
+        private ListTag.Builder builder;
 
         private int length;
-        private int index = 0;
 
-        public ListReader() {
+        public ListWriter() {
             super(null);
         }
 
@@ -133,24 +132,31 @@ public class TagWriter extends TagValueVisitor {
 
         @Override
         public TagValueVisitor visitValue() {
-            if (++this.index > this.length) {
-                throw new IndexOutOfBoundsException("Index: " + this.index + ", Size: " + this.length);
-            }
             return new TagWriter() {
                 @Override
                 protected void setTag(Tag tag) {
-                    super.setTag(tag);
-                    builder.add(tag);
+                    ListWriter.this.builder.add(tag);
                 }
             };
         }
+
+        @Override
+        public void visitEnd() {
+            ListTag tag = this.builder.build();
+            if (tag.size() != this.length) {
+                throw new IllegalStateException("Mismatched size: expected " + this.length + " but got " + tag.size());
+            }
+            this.setTag(tag);
+        }
+
+        protected abstract void setTag(ListTag tag);
     }
 
-    private static class CompoundReader extends TagCompoundVisitor {
+    private static abstract class CompoundWriter extends TagCompoundVisitor {
 
-        CompoundTag.Builder builder;
+        private final CompoundTag.Builder builder;
 
-        public CompoundReader() {
+        public CompoundWriter() {
             super(null);
             this.builder = CompoundTag.builder(true);
         }
@@ -160,10 +166,16 @@ public class TagWriter extends TagValueVisitor {
             return new TagWriter() {
                 @Override
                 protected void setTag(Tag tag) {
-                    super.setTag(tag);
-                    builder.add(key, tag);
+                    CompoundWriter.this.builder.add(key, tag);
                 }
             };
         }
+
+        @Override
+        public void visitEnd() {
+            this.setTag(this.builder.build());
+        }
+
+        protected abstract void setTag(CompoundTag tag);
     }
 }
