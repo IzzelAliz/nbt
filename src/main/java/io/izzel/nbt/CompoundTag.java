@@ -3,8 +3,6 @@ package io.izzel.nbt;
 import io.izzel.nbt.util.ImmutableBytes;
 import io.izzel.nbt.util.ImmutableInts;
 import io.izzel.nbt.util.ImmutableLongs;
-import io.izzel.nbt.visitor.TagCompoundVisitor;
-import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -232,15 +230,6 @@ public final class CompoundTag extends Tag {
 
     public List<? extends Entry<?>> dump() {
         return this.values;
-    }
-
-    @Override
-    public void accept(TagValueVisitor visitor) {
-        TagCompoundVisitor compoundVisitor = visitor.visitCompound();
-        for (Entry<?> entry : this.values) {
-            entry.getValue().accept(compoundVisitor.visit(entry.getKey()));
-        }
-        compoundVisitor.visitEnd();
     }
 
     @Override

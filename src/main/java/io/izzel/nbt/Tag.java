@@ -1,5 +1,6 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.TagReader;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
 public abstract class Tag {
@@ -14,5 +15,7 @@ public abstract class Tag {
         return this.type;
     }
 
-    public abstract void accept(TagValueVisitor visitor);
+    public void accept(TagValueVisitor visitor) {
+        new TagReader(this).accept(visitor);
+    }
 }

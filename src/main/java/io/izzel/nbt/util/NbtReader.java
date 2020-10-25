@@ -58,8 +58,7 @@ public class NbtReader implements Closeable {
     }
 
     private void read(ValueContext initContext) throws IOException {
-        Object[] stack = new Object[16];
-        stack[0] = initContext;
+        Object[] stack = new Object[]{initContext};
         int pointer = 1;
         while (pointer > 0) {
             Object context = stack[--pointer];
@@ -172,7 +171,7 @@ public class NbtReader implements Closeable {
                     tagVisitor.visitEnd();
                 } else {
                     if (++pointer >= stack.length) {
-                        stack = Arrays.copyOf(stack, stack.length * 2);
+                        stack = Arrays.copyOf(stack, stack.length * 2 + 1);
                     }
                     stack[pointer++] = new ValueContext(tagVisitor.visitValue(), ((ListContext) context).tagType);
                 }
@@ -183,7 +182,7 @@ public class NbtReader implements Closeable {
                     tagVisitor.visitEnd();
                 } else {
                     if (++pointer >= stack.length) {
-                        stack = Arrays.copyOf(stack, stack.length * 2);
+                        stack = Arrays.copyOf(stack, stack.length * 2 + 1);
                     }
                     stack[pointer++] = new ValueContext(tagVisitor.visit(nextString()), tagType);
                 }

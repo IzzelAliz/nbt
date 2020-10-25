@@ -1,5 +1,6 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.ImmutableBytes;
 import io.izzel.nbt.util.NbtReader;
 import io.izzel.nbt.util.NbtWriter;
 import org.junit.After;
@@ -102,7 +103,7 @@ public class TestIO {
             writer.flush();
         }
 
-        assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_INITIAL);
+        assertEquals(ImmutableBytes.builder().add(Files.readAllBytes(this.tmpFile)).build(), ImmutableBytes.builder().add(DUMMY_INITIAL).build());
 
         try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile))) {
             CompoundTag generated = reader.toCompoundTag();

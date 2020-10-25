@@ -3,8 +3,6 @@ package io.izzel.nbt;
 import io.izzel.nbt.util.ImmutableBytes;
 import io.izzel.nbt.util.ImmutableInts;
 import io.izzel.nbt.util.ImmutableLongs;
-import io.izzel.nbt.visitor.TagListVisitor;
-import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -216,17 +214,6 @@ public final class ListTag extends Tag {
 
     public List<? extends Tag> dump() {
         return this.values;
-    }
-
-    @Override
-    public void accept(TagValueVisitor visitor) {
-        TagListVisitor listVisitor = visitor.visitList();
-        listVisitor.visitType(this.elemType);
-        listVisitor.visitLength(this.size());
-        for (Tag tag : this.values) {
-            tag.accept(listVisitor.visitValue());
-        }
-        listVisitor.visitEnd();
     }
 
     @Override
