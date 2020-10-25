@@ -25,7 +25,7 @@ public final class ByteArrayTag extends Tag {
 
     @Override
     public String toString() {
-        return this.value.toString("[B:", ",", "]");
+        return this.value.toString("[B;", ",", "]");
     }
 
     @Override

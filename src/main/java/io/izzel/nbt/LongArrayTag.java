@@ -25,7 +25,7 @@ public final class LongArrayTag extends Tag {
 
     @Override
     public String toString() {
-        return this.value.toString("[L:", ",", "]");
+        return this.value.toString("[L;", ",", "]");
     }
 
     @Override

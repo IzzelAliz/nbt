@@ -25,7 +25,7 @@ public final class IntArrayTag extends Tag {
 
     @Override
     public String toString() {
-        return this.value.toString("[I:", ",", "]");
+        return this.value.toString("[I;", ",", "]");
     }
 
     @Override
