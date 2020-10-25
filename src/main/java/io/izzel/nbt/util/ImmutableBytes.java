@@ -99,7 +99,7 @@ public class ImmutableBytes implements Iterable<Byte> {
     }
 
     public ByteBuffer toByteBuffer() {
-        return ByteBuffer.wrap(value).slice().asReadOnlyBuffer();
+        return ByteBuffer.wrap(value, offset, byteCount).slice().asReadOnlyBuffer();
     }
 
     public static ImmutableBytes empty() {

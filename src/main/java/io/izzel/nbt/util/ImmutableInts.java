@@ -99,7 +99,7 @@ public class ImmutableInts implements Iterable<Integer> {
     }
 
     public IntBuffer toIntBuffer() {
-        return IntBuffer.wrap(value).slice().asReadOnlyBuffer();
+        return IntBuffer.wrap(value, offset, intCount).slice().asReadOnlyBuffer();
     }
 
     public static ImmutableInts empty() {

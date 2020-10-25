@@ -99,7 +99,7 @@ public class ImmutableLongs implements Iterable<Long> {
     }
 
     public LongBuffer toLongBuffer() {
-        return LongBuffer.wrap(value).slice().asReadOnlyBuffer();
+        return LongBuffer.wrap(value, offset, longCount).slice().asReadOnlyBuffer();
     }
 
     public static ImmutableLongs empty() {
