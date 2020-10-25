@@ -120,7 +120,9 @@ public class ImmutableInts implements Iterable<Integer> {
     }
 
     public static ImmutableInts concat(ImmutableInts first, ImmutableInts second) {
-        return ImmutableInts.builder().add(first.value).add(second.value).build();
+        return ImmutableInts.builder()
+                .add(first.value, first.offset, first.intCount)
+                .add(second.value, second.offset, second.intCount).build();
     }
 
     public static Builder builder() {

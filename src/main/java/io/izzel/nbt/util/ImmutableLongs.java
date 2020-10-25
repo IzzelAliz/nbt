@@ -120,7 +120,9 @@ public class ImmutableLongs implements Iterable<Long> {
     }
 
     public static ImmutableLongs concat(ImmutableLongs first, ImmutableLongs second) {
-        return ImmutableLongs.builder().add(first.value).add(second.value).build();
+        return ImmutableLongs.builder()
+                .add(first.value, first.offset, first.longCount)
+                .add(second.value, second.offset, second.longCount).build();
     }
 
     public static Builder builder() {

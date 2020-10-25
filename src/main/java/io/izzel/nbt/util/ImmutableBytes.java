@@ -120,7 +120,9 @@ public class ImmutableBytes implements Iterable<Byte> {
     }
 
     public static ImmutableBytes concat(ImmutableBytes first, ImmutableBytes second) {
-        return ImmutableBytes.builder().add(first.value).add(second.value).build();
+        return ImmutableBytes.builder()
+                .add(first.value, first.offset, first.byteCount)
+                .add(second.value, second.offset, second.byteCount).build();
     }
 
     public static Builder builder() {
