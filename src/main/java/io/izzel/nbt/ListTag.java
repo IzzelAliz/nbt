@@ -11,12 +11,11 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-public final class ListTag extends Tag implements Iterable<Tag> {
+public final class ListTag extends Tag {
 
     private static final ListTag EMPTY = new ListTag(TagType.END, Collections.emptyList());
 
@@ -215,6 +214,10 @@ public final class ListTag extends Tag implements Iterable<Tag> {
         return this.elemType;
     }
 
+    public List<? extends Tag> dump() {
+        return this.values;
+    }
+
     @Override
     public void accept(TagValueVisitor visitor) {
         TagListVisitor listVisitor = visitor.visitList();
@@ -224,11 +227,6 @@ public final class ListTag extends Tag implements Iterable<Tag> {
             tag.accept(listVisitor.visitValue());
         }
         listVisitor.visitEnd();
-    }
-
-    @Override
-    public Iterator<Tag> iterator() {
-        return this.values.iterator();
     }
 
     @Override

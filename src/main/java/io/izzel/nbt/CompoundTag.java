@@ -34,17 +34,17 @@ public final class CompoundTag extends Tag {
         this.valueMap = Collections.unmodifiableNavigableMap(entryMap);
     }
 
-    public SortedSet<String> keys() {
+    public SortedSet<String> names() {
         return this.valueMap.navigableKeySet();
     }
 
     public Tag get(String name, Tag fallback) {
-        List<? extends Entry<?>> entries = this.getEntries(name);
+        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
         return entries.isEmpty() ? fallback : entries.get(entries.size() - 1).getValue();
     }
 
     public Tag getOrDefault(String name) {
-        List<? extends Entry<?>> entries = this.getEntries(name);
+        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
         return entries.isEmpty() ? EndTag.of() : entries.get(entries.size() - 1).getValue();
     }
 
@@ -221,17 +221,17 @@ public final class CompoundTag extends Tag {
     }
 
     public Entry<?> getEntry(String name, Entry<?> fallback) {
-        List<? extends Entry<?>> entries = this.getEntries(name);
+        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
         return entries.isEmpty() ? fallback : entries.get(entries.size() - 1);
     }
 
     public Entry<?> getEntryOrDefault(String name) {
-        List<? extends Entry<?>> entries = this.getEntries(name);
+        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
         return entries.isEmpty() ? new Entry<>("", EndTag.of()) : entries.get(entries.size() - 1);
     }
 
-    public List<? extends Entry<?>> getEntries(String name) {
-        return this.valueMap.getOrDefault(name, Collections.emptyList());
+    public List<? extends Entry<?>> dump() {
+        return this.values;
     }
 
     @Override
@@ -255,15 +255,27 @@ public final class CompoundTag extends Tag {
 
     @Override
     public boolean equals(Object o) {
-        return o == this || o instanceof CompoundTag && this.values.equals(((CompoundTag) o).values);
+        if (o == this) return true;
+        if (o instanceof CompoundTag) {
+            CompoundTag that = (CompoundTag) o;
+            for (String name : this.names()) {
+                if (!this.getEntryOrDefault(name).equals(that.getEntryOrDefault(name))) return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return this.values.hashCode();
+        int hash = 0;
+        for (String name : this.names()) {
+            hash = hash * 31 + this.getEntryOrDefault(name).hashCode();
+        }
+        return hash;
     }
 
-    public static <T> Entry<T> entry(String name, Tag tag) {
+    public static <T extends Tag> Entry<T> entry(String name, T tag) {
         return new Entry<>(name, tag);
     }
 
@@ -279,12 +291,12 @@ public final class CompoundTag extends Tag {
         return new Builder(allowDuplicate);
     }
 
-    public static final class Entry<T> implements Map.Entry<String, Tag> {
+    public static final class Entry<T extends Tag> implements Map.Entry<String, T> {
 
         private final String name;
-        private final Tag value;
+        private final T value;
 
-        private Entry(String name, Tag value) {
+        private Entry(String name, T value) {
             this.name = name;
             this.value = value;
         }
@@ -295,12 +307,12 @@ public final class CompoundTag extends Tag {
         }
 
         @Override
-        public Tag getValue() {
+        public T getValue() {
             return this.value;
         }
 
         @Override
-        public Tag setValue(Tag value) {
+        public T setValue(T value) {
             throw new UnsupportedOperationException();
         }
 
@@ -311,7 +323,7 @@ public final class CompoundTag extends Tag {
 
         @Override
         public int hashCode() {
-            return 31 * this.name.hashCode() + this.value.hashCode();
+            return this.name.hashCode() ^ this.value.hashCode();
         }
     }
 

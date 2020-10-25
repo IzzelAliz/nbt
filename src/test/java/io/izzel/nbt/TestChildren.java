@@ -11,7 +11,7 @@ public class TestChildren {
     @Test
     public void testCount() {
         assertEquals(DUMMY_LIST_TAG.size(), 1);
-        assertEquals(DUMMY_COMPOUND_TAG.keys().size(), 1);
+        assertEquals(DUMMY_COMPOUND_TAG.names().size(), 1);
     }
 
     @Test
