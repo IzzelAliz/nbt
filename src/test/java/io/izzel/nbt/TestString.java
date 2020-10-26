@@ -1,6 +1,10 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.StringNbtReader;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.StringReader;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,5 +39,14 @@ public class TestString {
     public void testHashCode() {
         assertEquals(StringTag.of("").hashCode(), "".hashCode());
         assertEquals(StringTag.of(DUMMY_STRING).hashCode(), DUMMY_STRING.hashCode());
+    }
+
+    @Test
+    public void testParser() throws IOException {
+        Tag tag = new StringNbtReader(new StringReader(TestIO.DUMMY_STRING_LIST.get(0))).toTag();
+
+        assertEquals(tag.toString(), TestIO.DUMMY_STRING_LIST.get(0));
+        assertEquals(tag, new StringNbtReader(new StringReader(TestIO.DUMMY_STRING_LIST.get(0))).toTag());
+        assertEquals(tag, new StringNbtReader(new StringReader(TestIO.DUMMY_STRING_LIST.get(1))).toTag());
     }
 }

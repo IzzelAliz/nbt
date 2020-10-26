@@ -5,7 +5,12 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataOutputStream;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -283,6 +288,7 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
     private static final class ListWriter extends TagListVisitor {
 
+        private ByteArrayOutputStream tmp;
         private final DataOutputStream data;
         private final List<IOException> suppressed;
 
@@ -290,6 +296,7 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
             super(null);
             this.data = data;
             this.suppressed = suppressed;
+            this.tmp = new ByteArrayOutputStream(0); // TODO: nbt binary whose size is larger than 2GB
         }
 
         @Override
@@ -308,6 +315,11 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
             if (this.suppressed.isEmpty()) {
                 try {
                     data.writeInt(length);
+                    if (this.tmp != null) {
+                        data.write(this.tmp.toByteArray());
+                        this.tmp.close();
+                        this.tmp = null;
+                    }
                 } catch (IOException e) {
                     this.suppressed.add(e);
                 }
@@ -316,7 +328,8 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
         @Override
         public TagValueVisitor visitValue() {
-            return new ValueWriter(this.data, null, this.suppressed);
+            DataOutputStream outputStream = this.tmp != null ? new DataOutputStream(this.tmp) : data;
+            return new ValueWriter(outputStream, null, this.suppressed);
         }
     }
 
