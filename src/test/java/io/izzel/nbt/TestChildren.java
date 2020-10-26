@@ -16,9 +16,8 @@ public class TestChildren {
 
     @Test
     public void testListHit() {
-        CompoundTag tag = TestIO.DUMMY_LARGE_TAG;
+        CompoundTag tag = TestIO.DUMMY_TAG_DATA;
         assertTrue(tag.getListOrDefault("ListBoolean").getBooleanOrDefault(0));
-        assertEquals(tag.getListOrDefault("ListEnd").getOrDefault(0), TestEnd.DUMMY_END_TAG);
         assertEquals(tag.getListOrDefault("ListList").getListOrDefault(0), DUMMY_LIST_TAG);
         assertEquals(tag.getListOrDefault("ListList").getListOrDefault(0, TagType.INT), DUMMY_LIST_TAG);
         assertEquals(tag.getListOrDefault("ListCompound").getCompoundOrDefault(0), DUMMY_COMPOUND_TAG);
@@ -42,7 +41,7 @@ public class TestChildren {
 
     @Test
     public void testCompoundHit() {
-        CompoundTag tag = TestIO.DUMMY_LARGE_TAG;
+        CompoundTag tag = TestIO.DUMMY_TAG_DATA;
         assertTrue(tag.getBooleanOrDefault("Boolean"));
         assertEquals(tag.getOrDefault("End"), TestEnd.DUMMY_END_TAG);
         assertEquals(tag.getListOrDefault("List"), DUMMY_LIST_TAG);
@@ -68,9 +67,8 @@ public class TestChildren {
 
     @Test
     public void testListMiss() {
-        CompoundTag tag = TestIO.DUMMY_LARGE_TAG;
+        CompoundTag tag = TestIO.DUMMY_TAG_DATA;
         assertTrue(tag.getListOrDefault("ListBoolean").getBoolean(1, true));
-        assertEquals(tag.getListOrDefault("ListEnd").get(1, TestEnd.DUMMY_END_TAG), TestEnd.DUMMY_END_TAG);
         assertEquals(tag.getListOrDefault("ListList").getList(1, DUMMY_LIST_TAG), DUMMY_LIST_TAG);
         assertEquals(tag.getListOrDefault("ListList").getList(1, TagType.INT, DUMMY_LIST_TAG), DUMMY_LIST_TAG);
         assertEquals(tag.getListOrDefault("ListCompound").getCompound(1, DUMMY_COMPOUND_TAG), DUMMY_COMPOUND_TAG);
@@ -88,7 +86,7 @@ public class TestChildren {
 
     @Test
     public void testCompoundMiss() {
-        CompoundTag tag = TestIO.DUMMY_LARGE_TAG;
+        CompoundTag tag = TestIO.DUMMY_TAG_DATA;
         assertTrue(tag.getBoolean("Unknown", true));
         assertEquals(tag.get("Unknown", TestEnd.DUMMY_END_TAG), TestEnd.DUMMY_END_TAG);
         assertEquals(tag.getInt("Unknown", TestNumber.DUMMY_INT), TestNumber.DUMMY_INT);
@@ -108,13 +106,13 @@ public class TestChildren {
 
     @Test(expected = IllegalArgumentException.class)
     public void testListTypeMismatch() {
-        CompoundTag tag = TestIO.DUMMY_LARGE_TAG;
+        CompoundTag tag = TestIO.DUMMY_TAG_DATA;
         assertEquals(tag.getListOrDefault("ListBoolean").get(0, TagType.END, TestNumber.DUMMY_TRUE_TAG), TestNumber.DUMMY_TRUE_TAG);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testCompoundTypeMismatch() {
-        CompoundTag tag = TestIO.DUMMY_LARGE_TAG;
+        CompoundTag tag = TestIO.DUMMY_TAG_DATA;
         assertEquals(tag.get("Boolean", TagType.END, TestNumber.DUMMY_TRUE_TAG), TestNumber.DUMMY_TRUE_TAG);
     }
 }

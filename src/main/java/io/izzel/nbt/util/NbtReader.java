@@ -70,31 +70,31 @@ public class NbtReader implements Closeable {
                         break;
                     }
                     case BYTE: {
-                        tagVisitor.visitByte(data.readByte());
+                        tagVisitor.visitByte(this.data.readByte());
                         break;
                     }
                     case SHORT: {
-                        tagVisitor.visitShort(data.readShort());
+                        tagVisitor.visitShort(this.data.readShort());
                         break;
                     }
                     case INT: {
-                        tagVisitor.visitInt(data.readInt());
+                        tagVisitor.visitInt(this.data.readInt());
                         break;
                     }
                     case LONG: {
-                        tagVisitor.visitLong(data.readLong());
+                        tagVisitor.visitLong(this.data.readLong());
                         break;
                     }
                     case FLOAT: {
-                        tagVisitor.visitFloat(data.readFloat());
+                        tagVisitor.visitFloat(this.data.readFloat());
                         break;
                     }
                     case DOUBLE: {
-                        tagVisitor.visitDouble(data.readDouble());
+                        tagVisitor.visitDouble(this.data.readDouble());
                         break;
                     }
                     case BYTE_ARRAY: {
-                        int len = data.readInt();
+                        int len = this.data.readInt();
                         if (len >= 0 && len <= 0x7FFFFFF7) {
                             byte[] bufferArray = new byte[8192];
                             ByteBuffer buffer = ByteBuffer.wrap(bufferArray);
@@ -117,19 +117,22 @@ public class NbtReader implements Closeable {
                     }
                     case LIST: {
                         TagType tagType = nextType();
-                        int len = data.readInt();
-                        TagListVisitor visitor = tagVisitor.visitList();
-                        stack[pointer++] = new ListContext(len, visitor, tagType);
-                        visitor.visitType(tagType);
-                        visitor.visitLength(len);
-                        break;
+                        int len = this.data.readInt();
+                        if (tagType != TagType.END || len <= 0) {
+                            TagListVisitor visitor = tagVisitor.visitList();
+                            stack[pointer++] = new ListContext(len, visitor, tagType);
+                            visitor.visitType(tagType);
+                            visitor.visitLength(len);
+                            break;
+                        }
+                        throw new IOException("List tags do not allow end tag values");
                     }
                     case COMPOUND: {
                         stack[pointer++] = new CompoundContext(tagVisitor.visitCompound());
                         break;
                     }
                     case INT_ARRAY: {
-                        int len = data.readInt();
+                        int len = this.data.readInt();
                         if (len >= 0 && len <= 0x7FFFFFF7) {
                             byte[] bufferArray = new byte[8192];
                             ImmutableInts.Builder builder = ImmutableInts.builder();
@@ -147,7 +150,7 @@ public class NbtReader implements Closeable {
                         throw new IOException("Size exceeds " + 0x7FFFFFF7 + ", got " + (len & 0xFFFFFFFFL));
                     }
                     case LONG_ARRAY: {
-                        int len = data.readInt();
+                        int len = this.data.readInt();
                         if (len >= 0 && len <= 0x7FFFFFF7) {
                             byte[] bufferArray = new byte[8192];
                             ImmutableLongs.Builder builder = ImmutableLongs.builder();
@@ -192,16 +195,16 @@ public class NbtReader implements Closeable {
 
     private TagType nextType() throws IOException {
         try {
-            return TagType.getById(data.readByte());
+            return TagType.getById(this.data.readByte());
         } catch (IllegalArgumentException e) {
             throw new IOException(e.getMessage());
         }
     }
 
     private String nextString() throws IOException {
-        int len = data.readShort() & 0xFFFF;
+        int len = this.data.readShort() & 0xFFFF;
         byte[] bytes = new byte[len];
-        data.readFully(bytes, 0, len);
+        this.data.readFully(bytes, 0, len);
         return new String(bytes, StandardCharsets.UTF_8);
     }
 

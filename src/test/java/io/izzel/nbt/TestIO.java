@@ -1,6 +1,5 @@
 package io.izzel.nbt;
 
-import io.izzel.nbt.util.ImmutableBytes;
 import io.izzel.nbt.util.NbtReader;
 import io.izzel.nbt.util.NbtWriter;
 import org.junit.After;
@@ -13,9 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -23,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 public class TestIO {
 
-    public static final CompoundTag DUMMY_LARGE_TAG = CompoundTag.builder()
+    public static final CompoundTag DUMMY_TAG_DATA = CompoundTag.builder()
             .add("Boolean", true)
             .add("Int", TestNumber.DUMMY_INT)
             .add("Long", TestNumber.DUMMY_LONG)
@@ -60,51 +57,57 @@ public class TestIO {
             .add("ListLongs1", ListTag.builder().add(TestArray.DUMMY_MUTABLE_LONGS).build())
             .add("ListLongs2", ListTag.builder().add(TestArray.DUMMY_BUFFERED_LONGS).build())
             .add("ListLongs3", ListTag.builder().add(TestArray.DUMMY_IMMUTABLE_LONGS).build())
-            .add("ListEnd", ListTag.builder().add(TestEnd.DUMMY_END_TAG).build())
             .add("ListList", ListTag.builder().add(TestChildren.DUMMY_LIST_TAG).build())
             .add("ListCompound", ListTag.builder().add(TestChildren.DUMMY_COMPOUND_TAG).build())
             .build();
 
-    public static final byte[] DUMMY_INITIAL = Base64.getDecoder().decode("CgAAAQAHQm9vbGVhbgEDAANJbnQAAAA" +
-            "qBAAETG9uZwAAAAAAAAAqAQAEQnl0ZSoCAAVTaG9ydAAqBQAFRmxvYXRCKAAABgAGRG91YmxlQEUAAAAAAAAIAAZTdHJp" +
-            "bmcAAjQyCwAFSW50czEAAAADAAAAAQAAAAIAAAADCwAFSW50czIAAAADAAAABAAAAAUAAAAGCwAFSW50czMAAAADAAAAB" +
-            "wAAAAgAAAAJBwAGQnl0ZXMxAAAAAwECAwcABkJ5dGVzMgAAAAMEBQYHAAZCeXRlczMAAAADBwgJDAAGTG9uZ3MxAAAAAw" +
-            "AAAAAAAAABAAAAAAAAAAIAAAAAAAAAAwwABkxvbmdzMgAAAAMAAAAAAAAABAAAAAAAAAAFAAAAAAAAAAYMAAZMb25nczM" +
-            "AAAADAAAAAAAAAAcAAAAAAAAACAAAAAAAAAAJCQAETGlzdAMAAAABAAAAKgoACENvbXBvdW5kAwAHVW5rbm93bgAAACoA" +
-            "CQALTGlzdEJvb2xlYW4BAAAAAQEJAAdMaXN0SW50AwAAAAEAAAAqCQAITGlzdExvbmcEAAAAAQAAAAAAAAAqCQAITGlzd" +
-            "EJ5dGUBAAAAASoJAAlMaXN0U2hvcnQCAAAAAQAqCQAJTGlzdEZsb2F0BQAAAAFCKAAACQAKTGlzdERvdWJsZQYAAAABQE" +
-            "UAAAAAAAAJAApMaXN0U3RyaW5nCAAAAAEAAjQyCQAJTGlzdEludHMxCwAAAAEAAAADAAAAAQAAAAIAAAADCQAJTGlzdEl" +
-            "udHMyCwAAAAEAAAADAAAABAAAAAUAAAAGCQAJTGlzdEludHMzCwAAAAEAAAADAAAABwAAAAgAAAAJCQAKTGlzdEJ5dGVz" +
-            "MQcAAAABAAAAAwECAwkACkxpc3RCeXRlczIHAAAAAQAAAAMEBQYJAApMaXN0Qnl0ZXMzBwAAAAEAAAADBwgJCQAKTGlzd" +
-            "ExvbmdzMQwAAAABAAAAAwAAAAAAAAABAAAAAAAAAAIAAAAAAAAAAwkACkxpc3RMb25nczIMAAAAAQAAAAMAAAAAAAAABA" +
-            "AAAAAAAAAFAAAAAAAAAAYJAApMaXN0TG9uZ3MzDAAAAAEAAAADAAAAAAAAAAcAAAAAAAAACAAAAAAAAAAJCQAHTGlzdEV" +
-            "uZAAAAAABCQAITGlzdExpc3QJAAAAAQMAAAABAAAAKgkADExpc3RDb21wb3VuZAoAAAABAwAHVW5rbm93bgAAACoAAA==");
+    public static final byte[] DUMMY_DATA = Base64.getUrlDecoder().decode("CgAAAQAHQm9vbGVhbg" +
+            "EDAANJbnQAAAAqBAAETG9uZwAAAAAAAAAqAQAEQnl0ZSoCAAVTaG9ydAAqBQAFRmxvYXRCKAAABgAGRG" +
+            "91YmxlQEUAAAAAAAAIAAZTdHJpbmcAAjQyCwAFSW50czEAAAADAAAAAQAAAAIAAAADCwAFSW50czIAAA" +
+            "ADAAAABAAAAAUAAAAGCwAFSW50czMAAAADAAAABwAAAAgAAAAJBwAGQnl0ZXMxAAAAAwECAwcABkJ5dG" +
+            "VzMgAAAAMEBQYHAAZCeXRlczMAAAADBwgJDAAGTG9uZ3MxAAAAAwAAAAAAAAABAAAAAAAAAAIAAAAAAA" +
+            "AAAwwABkxvbmdzMgAAAAMAAAAAAAAABAAAAAAAAAAFAAAAAAAAAAYMAAZMb25nczMAAAADAAAAAAAAAA" +
+            "cAAAAAAAAACAAAAAAAAAAJCQAETGlzdAMAAAABAAAAKgoACENvbXBvdW5kAwAHVW5rbm93bgAAACoACQ" +
+            "ALTGlzdEJvb2xlYW4BAAAAAQEJAAdMaXN0SW50AwAAAAEAAAAqCQAITGlzdExvbmcEAAAAAQAAAAAAAA" +
+            "AqCQAITGlzdEJ5dGUBAAAAASoJAAlMaXN0U2hvcnQCAAAAAQAqCQAJTGlzdEZsb2F0BQAAAAFCKAAACQ" +
+            "AKTGlzdERvdWJsZQYAAAABQEUAAAAAAAAJAApMaXN0U3RyaW5nCAAAAAEAAjQyCQAJTGlzdEludHMxCw" +
+            "AAAAEAAAADAAAAAQAAAAIAAAADCQAJTGlzdEludHMyCwAAAAEAAAADAAAABAAAAAUAAAAGCQAJTGlzdE" +
+            "ludHMzCwAAAAEAAAADAAAABwAAAAgAAAAJCQAKTGlzdEJ5dGVzMQcAAAABAAAAAwECAwkACkxpc3RCeX" +
+            "RlczIHAAAAAQAAAAMEBQYJAApMaXN0Qnl0ZXMzBwAAAAEAAAADBwgJCQAKTGlzdExvbmdzMQwAAAABAA" +
+            "AAAwAAAAAAAAABAAAAAAAAAAIAAAAAAAAAAwkACkxpc3RMb25nczIMAAAAAQAAAAMAAAAAAAAABAAAAA" +
+            "AAAAAFAAAAAAAAAAYJAApMaXN0TG9uZ3MzDAAAAAEAAAADAAAAAAAAAAcAAAAAAAAACAAAAAAAAAAJCQ" +
+            "AITGlzdExpc3QJAAAAAQMAAAABAAAAKgkADExpc3RDb21wb3VuZAoAAAABAwAHVW5rbm93bgAAACoAAA");
 
-    public static final byte[] DUMMY_GZIPPED = Base64.getDecoder().decode("H4sIAAAAAAAAAG2SXU7DMBCEJ4l/4qQ" +
-            "HQXkj4QAoUCQk3ioOUNQKKoqN2lSI2+O115FbaslKPDve9fpzAxTQo3P77doWFapnOwHoBMSLs++Ioysgxt9p25WQqw93" +
-            "mNBJyKe9W0/jDaCgHt3pbb+9X0Z/DbWaDju/v7zrW0if9Hjr9QpUDijpn/WedeGn9FOxPrCuQz7AaCg6Q0xUlFVahwRCq" +
-            "rQOG3VtFlDUwlwYXBx8ABpVMvWZSfBX8lcl05CZNFKrcRjjb2x3nFKLXYP6wX19u5PdVNCv9tO6H0sBGLTkTJdOGwoDTZ" +
-            "pvfE5gUJNElUV29KRTr2GvFwwJAUwZnEkKhKiNgjAZNCRGVIrUxIsjkVkdUnhwnCTAa/kEZwQzQ58bZpSZYcgNM1MuHLn" +
-            "q5PBw80A/BzzlPDDMAY+bAxH5Iit2lXvu7i/d/x5A7h4u3VdeQmC5tJtQOnH009A6A7wgMb2SJgbPngr+AOUw2MagAwAA");
+    public static final byte[] DUMMY_COMPRESSED_DATA = Base64.getUrlDecoder().decode("H4sIAAA" +
+            "AAAAAAG2SW07DMBBFbxI_4iQLQfkjYQGoPCQk_ioWUEQEFcVGbSrE7pnxI3JLLVmJ71zPeHzcAAX0yrn" +
+            "dtLFFherJzgB6AfHs7DvC6AuI1e889SXk-sPtZ_QS8nHnNvPqClBQ9-74uptuH4K_hlrP-y3tL2-GFpK" +
+            "SHq5Jr8DlgJL_oz5EXdCUNFXUx6hrnw8wGorPEBIVZZXWPoGQKq39Rl2bDopbWAojFkc8AI8qmYbMJOJ" +
+            "Xxq9KpjEzaaRWwzCGbmx7mFOLfYP6zn19u6N9q6Bf7Kd1P5YDMGjZmS6dNxQGmjVqfElgULPElUV29KR" +
+            "zr34vCYYFD6b0ziR5QtxGwZgMGhYDKsVq4hUjgVntUxC4mMTDa-MJTghmhiE3LCgzw5gbFqaxcOCqk4P" +
+            "g5oFhCRDlPDAuAcIdAwF5lxW7yD13D-fufw8gd4_n7gsvIYCjadibEe1YTM-iCcGTt4E_poTgFZEDAAA");
 
-    public static final List<String> DUMMY_STRING_LIST = Arrays.asList("{Boolean:1b,Int:42,Long:42l,Byte:4" +
-            "2b,Short:42s,Float:42.0f,Double:42.0d,String:\"42\",Ints1:[I;1,2,3],Ints2:[I;4,5,6],Ints3:[I;" +
-            "7,8,9],Bytes1:[B;1,2,3],Bytes2:[B;4,5,6],Bytes3:[B;7,8,9],Longs1:[L;1,2,3],Longs2:[L;4,5,6],L" +
-            "ongs3:[L;7,8,9],List:[42],Compound:{Unknown:42},ListBoolean:[1b],ListInt:[42],ListLong:[42l]," +
-            "ListByte:[42b],ListShort:[42s],ListFloat:[42.0f],ListDouble:[42.0d],ListString:[\"42\"],ListI" +
-            "nts1:[[I;1,2,3]],ListInts2:[[I;4,5,6]],ListInts3:[[I;7,8,9]],ListBytes1:[[B;1,2,3]],ListBytes" +
-            "2:[[B;4,5,6]],ListBytes3:[[B;7,8,9]],ListLongs1:[[L;1,2,3]],ListLongs2:[[L;4,5,6]],ListLongs3" +
-            ":[[L;7,8,9]],ListEnd:[],ListList:[[42]],ListCompound:[{Unknown:42}]}", "{\n  Boolean: 1b, \n " +
-            " Int: 42, \n  Long: 42l, \n  Byte: 42b, \n  Short: 42s, \n  Float: 42.0f, \n  Double: 42.0d, " +
-            "\n  String: \"42\", \n  Ints1: [I; 1, 2, 3], \n  Ints2: [I; 4, 5, 6], \n  Ints3: [I; 7, 8, 9]" +
-            ", \n  Bytes1: [B; 1, 2, 3], \n  Bytes2: [B; 4, 5, 6], \n  Bytes3: [B; 7, 8, 9], \n  Longs1: [" +
-            "L; 1, 2, 3], \n  Longs2: [L; 4, 5, 6], \n  Longs3: [L; 7, 8, 9], \n  List: [42], \n  Compound" +
-            ": {Unknown: 42}, \n  ListBoolean: [1b], \n  ListInt: [42], \n  ListLong: [42l], \n  ListByte:" +
-            " [42b], \n  ListShort: [42s], \n  ListFloat: [42.0f], \n  ListDouble: [42.0d], \n  ListString" +
-            ": [\"42\"], \n  ListInts1: [[I; 1, 2, 3]], \n  ListInts2: [[I; 4, 5, 6]], \n  ListInts3: [[I;" +
-            " 7, 8, 9]], \n  ListBytes1: [[B; 1, 2, 3]], \n  ListBytes2: [[B; 4, 5, 6]], \n  ListBytes3: [" +
-            "[B; 7, 8, 9]], \n  ListLongs1: [[L; 1, 2, 3]], \n  ListLongs2: [[L; 4, 5, 6]], \n  ListLongs3" +
-            ": [[L; 7, 8, 9]], \n  ListEnd: [], \n  ListList: [[42]], \n  ListCompound: [{Unknown: 42}]\n}");
+    public static final String DUMMY_STRING_STORED_DATA_WITHOUT_SPACE_CHARACTER = ("{Boolean:" +
+            "1b,Int:42,Long:42l,Byte:42b,Short:42s,Float:42.0f,Double:42.0d,String:\"42\",Int" +
+            "s1:[I;1,2,3],Ints2:[I;4,5,6],Ints3:[I;7,8,9],Bytes1:[B;1,2,3],Bytes2:[B;4,5,6],B" +
+            "ytes3:[B;7,8,9],Longs1:[L;1,2,3],Longs2:[L;4,5,6],Longs3:[L;7,8,9],List:[42],Com" +
+            "pound:{Unknown:42},ListBoolean:[1b],ListInt:[42],ListLong:[42l],ListByte:[42b],L" +
+            "istShort:[42s],ListFloat:[42.0f],ListDouble:[42.0d],ListString:[\"42\"],ListInts" +
+            "1:[[I;1,2,3]],ListInts2:[[I;4,5,6]],ListInts3:[[I;7,8,9]],ListBytes1:[[B;1,2,3]]" +
+            ",ListBytes2:[[B;4,5,6]],ListBytes3:[[B;7,8,9]],ListLongs1:[[L;1,2,3]],ListLongs2" +
+            ":[[L;4,5,6]],ListLongs3:[[L;7,8,9]],ListList:[[42]],ListCompound:[{Unknown:42}]}");
+
+    public static final String DUMMY_STRING_STORED_DATA = ("{\n  Boolean: 1b,\n  Int: 42,\n  " +
+            "Long: 42l,\n  Byte: 42b,\n  Short: 42s,\n  Float: 42.0f,\n  Double: 42.0d,\n  St" +
+            "ring: \"42\",\n  Ints1: [I; 1, 2, 3],\n  Ints2: [I; 4, 5, 6],\n  Ints3: [I; 7, 8" +
+            ", 9],\n  Bytes1: [B; 1, 2, 3],\n  Bytes2: [B; 4, 5, 6],\n  Bytes3: [B; 7, 8, 9]," +
+            "\n  Longs1: [L; 1, 2, 3],\n  Longs2: [L; 4, 5, 6],\n  Longs3: [L; 7, 8, 9],\n  L" +
+            "ist: [42],\n  Compound: {Unknown: 42},\n  ListBoolean: [1b],\n  ListInt: [42],\n" +
+            "  ListLong: [42l],\n  ListByte: [42b],\n  ListShort: [42s],\n  ListFloat: [42.0f" +
+            "],\n  ListDouble: [42.0d],\n  ListString: [\"42\"],\n  ListInts1: [[I; 1, 2, 3]]" +
+            ",\n  ListInts2: [[I; 4, 5, 6]],\n  ListInts3: [[I; 7, 8, 9]],\n  ListBytes1: [[B" +
+            "; 1, 2, 3]],\n  ListBytes2: [[B; 4, 5, 6]],\n  ListBytes3: [[B; 7, 8, 9]],\n  Li" +
+            "stLongs1: [[L; 1, 2, 3]],\n  ListLongs2: [[L; 4, 5, 6]],\n  ListLongs3: [[L; 7, " +
+            "8, 9]],\n  ListEnd: [],\n  ListList: [[42]],\n  ListCompound: [{Unknown: 42}]\n}");
 
     private Path tmpFile;
 
@@ -121,30 +124,30 @@ public class TestIO {
     @Test
     public void testInitial() throws IOException {
         try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile))) {
-            DUMMY_LARGE_TAG.accept(writer);
+            DUMMY_TAG_DATA.accept(writer);
             writer.flush();
         }
 
-        assertEquals(ImmutableBytes.builder().add(Files.readAllBytes(this.tmpFile)).build(), ImmutableBytes.builder().add(DUMMY_INITIAL).build());
+        assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_DATA);
 
         try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile))) {
             CompoundTag generated = reader.toCompoundTag();
-            assertEquals(DUMMY_LARGE_TAG, generated);
+            assertEquals(DUMMY_TAG_DATA, generated);
         }
     }
 
     @Test
     public void testGzipped() throws IOException {
         try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile), true)) {
-            DUMMY_LARGE_TAG.accept(writer);
+            DUMMY_TAG_DATA.accept(writer);
             writer.flush();
         }
 
-        assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_GZIPPED);
+        assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_COMPRESSED_DATA);
 
         try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile), true)) {
             CompoundTag generated = reader.toCompoundTag();
-            assertEquals(DUMMY_LARGE_TAG, generated);
+            assertEquals(DUMMY_TAG_DATA, generated);
         }
     }
 

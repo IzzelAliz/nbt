@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +16,8 @@ import java.util.StringJoiner;
 
 public final class ListTag extends Tag {
 
-    private static final ListTag EMPTY = new ListTag(TagType.END, Collections.emptyList());
+    private static final ListTag[] CACHE = Arrays.stream(TagType.values())
+            .map(type -> new ListTag(type, Collections.emptyList())).toArray(ListTag[]::new);
 
     private final List<Tag> values;
     private final TagType elemType;
@@ -236,11 +238,11 @@ public final class ListTag extends Tag {
     }
 
     public static ListTag empty() {
-        return EMPTY;
+        return CACHE[TagType.END.ordinal()];
     }
 
     public static Builder builder() {
-        return new Builder(new ArrayList<>(), null);
+        return new Builder(new ArrayList<>(), TagType.END);
     }
 
     public static Builder builder(TagType type) {
@@ -257,9 +259,13 @@ public final class ListTag extends Tag {
         }
 
         public Builder add(Tag tag) {
-            if (tagType == null) {
+            if (tagType == TagType.END) {
                 tagType = tag.getType();
-            } else if (tag.getType() != tagType) {
+            }
+            if (tagType == TagType.END) {
+                throw new IllegalArgumentException("List tags do not allow end tag values");
+            }
+            if (tagType != tag.getType()) {
                 throw new IllegalArgumentException("Unmatched tag type (required " + tagType + ")");
             }
             values.add(tag);
@@ -335,8 +341,8 @@ public final class ListTag extends Tag {
         }
 
         public ListTag build() {
-            if (values.isEmpty() && (tagType == null || tagType == TagType.END)) {
-                return ListTag.EMPTY;
+            if (values.isEmpty()) {
+                return ListTag.CACHE[tagType.ordinal()];
             }
             return new ListTag(tagType, values);
         }
