@@ -22,9 +22,9 @@ public class TestToString {
 
     @Test
     public void testArray() {
-        assertEquals(TestArray.DUMMY_INTS_TAG.toString(), "[I:7,8,9]");
-        assertEquals(TestArray.DUMMY_BYTES_TAG.toString(), "[B:7,8,9]");
-        assertEquals(TestArray.DUMMY_LONGS_TAG.toString(), "[L:7,8,9]");
+        assertEquals(TestArray.DUMMY_INTS_TAG.toString(), "[I;7,8,9]");
+        assertEquals(TestArray.DUMMY_BYTES_TAG.toString(), "[B;7,8,9]");
+        assertEquals(TestArray.DUMMY_LONGS_TAG.toString(), "[L;7,8,9]");
     }
 
     @Test
