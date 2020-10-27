@@ -12,7 +12,7 @@ public abstract class TagCompoundVisitor {
         if (this.visitor != null) {
             return this.visitor.visit(key);
         }
-        return null;
+        return new TagValueVisitor(null) {};
     }
 
     public void visitEnd() {

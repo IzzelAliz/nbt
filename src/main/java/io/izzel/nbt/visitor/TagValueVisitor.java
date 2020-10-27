@@ -70,14 +70,14 @@ public abstract class TagValueVisitor {
         if (this.visitor != null) {
             return this.visitor.visitList();
         }
-        return null;
+        return new TagListVisitor(null) {};
     }
 
     public TagCompoundVisitor visitCompound() {
         if (this.visitor != null) {
             return this.visitor.visitCompound();
         }
-        return null;
+        return new TagCompoundVisitor(null) {};
     }
 
     public void visitIntArray(ImmutableInts ints) {

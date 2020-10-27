@@ -26,7 +26,7 @@ public abstract class TagListVisitor {
         if (this.visitor != null) {
             return this.visitor.visitValue();
         }
-        return null;
+        return new TagValueVisitor(null) {};
     }
 
     public void visitEnd() {
