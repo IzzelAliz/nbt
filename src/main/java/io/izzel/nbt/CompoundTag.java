@@ -7,11 +7,13 @@ import io.izzel.nbt.util.ImmutableLongs;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
@@ -235,9 +237,30 @@ public final class CompoundTag extends Tag {
     public boolean equals(Object o) {
         if (o == this) return true;
         if (o instanceof CompoundTag) {
-            CompoundTag that = (CompoundTag) o;
-            for (String name : this.names()) {
-                if (!this.getEntryOrDefault(name).equals(that.getEntryOrDefault(name))) return false;
+            Queue<Tag> thisTags = new ArrayDeque<>(Collections.singleton(this));
+            Queue<Tag> thatTags = new ArrayDeque<>(Collections.singleton((CompoundTag) o));
+            while (!thisTags.isEmpty()) {
+                Tag thisTag = thisTags.remove(), thatTag = thatTags.remove();
+                if (thisTag != thatTag) {
+                    TagType type = thisTag.getType();
+                    if (type != thatTag.getType()) return false;
+                    if (type == TagType.COMPOUND) {
+                        SortedSet<String> thisCompoundNames = ((CompoundTag) thatTag).names();
+                        if (((CompoundTag) thatTag).names().size() != thisCompoundNames.size()) return false;
+                        for (String name: thisCompoundNames) {
+                            thisTags.add(((CompoundTag) thisTag).getOrDefault(name));
+                            thatTags.add(((CompoundTag) thatTag).getOrDefault(name));
+                        }
+                        continue;
+                    }
+                    if (type == TagType.LIST) {
+                        if (((ListTag) thatTag).size() != ((ListTag) thisTag).size()) return false;
+                        thisTags.addAll(((ListTag) thisTag).dump());
+                        thatTags.addAll(((ListTag) thatTag).dump());
+                        continue;
+                    }
+                    if (!thatTag.equals(thisTag)) return false;
+                }
             }
             return true;
         }

@@ -7,11 +7,14 @@ import io.izzel.nbt.util.ImmutableLongs;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
+import java.util.SortedSet;
 
 public final class ListTag extends Tag {
 
@@ -219,7 +222,36 @@ public final class ListTag extends Tag {
 
     @Override
     public boolean equals(Object o) {
-        return o == this || o instanceof ListTag && this.values.equals(((ListTag) o).values);
+        if (o == this) return true;
+        if (o instanceof ListTag) {
+            Queue<Tag> thisTags = new ArrayDeque<>(Collections.singleton(this));
+            Queue<Tag> thatTags = new ArrayDeque<>(Collections.singleton((ListTag) o));
+            while (!thisTags.isEmpty()) {
+                Tag thisTag = thisTags.remove(), thatTag = thatTags.remove();
+                if (thisTag != thatTag) {
+                    TagType type = thisTag.getType();
+                    if (type != thatTag.getType()) return false;
+                    if (type == TagType.LIST) {
+                        if (((ListTag) thatTag).size() != ((ListTag) thisTag).size()) return false;
+                        thisTags.addAll(((ListTag) thisTag).dump());
+                        thatTags.addAll(((ListTag) thatTag).dump());
+                        continue;
+                    }
+                    if (type == TagType.COMPOUND) {
+                        SortedSet<String> thisCompoundNames = ((CompoundTag) thatTag).names();
+                        if (((CompoundTag) thatTag).names().size() != thisCompoundNames.size()) return false;
+                        for (String name: thisCompoundNames) {
+                            thisTags.add(((CompoundTag) thisTag).getOrDefault(name));
+                            thatTags.add(((CompoundTag) thatTag).getOrDefault(name));
+                        }
+                        continue;
+                    }
+                    if (!thatTag.equals(thisTag)) return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override

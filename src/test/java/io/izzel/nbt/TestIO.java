@@ -86,7 +86,7 @@ public class TestIO {
             "zr34vCYYFD6b0ziR5QtxGwZgMGhYDKsVq4hUjgVntUxC4mMTDa-MJTghmhiE3LCgzw5gbFqaxcOCqk4P" +
             "g5oFhCRDlPDAuAcIdAwF5lxW7yD13D-fufw8gd4_n7gsvIYCjadibEe1YTM-iCcGTt4E_poTgFZEDAAA");
 
-    public static final String DUMMY_STRING_STORED_DATA_WITHOUT_SPACE_CHARACTER = ("{Boolean:" +
+    public static final String DUMMY_STRING_FORMAT_DATA_WITHOUT_SPACE_CHARACTER = ("{Boolean:" +
             "1b,Int:42,Long:42l,Byte:42b,Short:42s,Float:42.0f,Double:42.0d,String:\"42\",Int" +
             "s1:[I;1,2,3],Ints2:[I;4,5,6],Ints3:[I;7,8,9],Bytes1:[B;1,2,3],Bytes2:[B;4,5,6],B" +
             "ytes3:[B;7,8,9],Longs1:[L;1,2,3],Longs2:[L;4,5,6],Longs3:[L;7,8,9],List:[42],Com" +
@@ -96,18 +96,19 @@ public class TestIO {
             ",ListBytes2:[[B;4,5,6]],ListBytes3:[[B;7,8,9]],ListLongs1:[[L;1,2,3]],ListLongs2" +
             ":[[L;4,5,6]],ListLongs3:[[L;7,8,9]],ListList:[[42]],ListCompound:[{Unknown:42}]}");
 
-    public static final String DUMMY_STRING_STORED_DATA = ("{\n  Boolean: 1b,\n  Int: 42,\n  " +
-            "Long: 42l,\n  Byte: 42b,\n  Short: 42s,\n  Float: 42.0f,\n  Double: 42.0d,\n  St" +
-            "ring: \"42\",\n  Ints1: [I; 1, 2, 3],\n  Ints2: [I; 4, 5, 6],\n  Ints3: [I; 7, 8" +
-            ", 9],\n  Bytes1: [B; 1, 2, 3],\n  Bytes2: [B; 4, 5, 6],\n  Bytes3: [B; 7, 8, 9]," +
-            "\n  Longs1: [L; 1, 2, 3],\n  Longs2: [L; 4, 5, 6],\n  Longs3: [L; 7, 8, 9],\n  L" +
-            "ist: [42],\n  Compound: {Unknown: 42},\n  ListBoolean: [1b],\n  ListInt: [42],\n" +
-            "  ListLong: [42l],\n  ListByte: [42b],\n  ListShort: [42s],\n  ListFloat: [42.0f" +
-            "],\n  ListDouble: [42.0d],\n  ListString: [\"42\"],\n  ListInts1: [[I; 1, 2, 3]]" +
-            ",\n  ListInts2: [[I; 4, 5, 6]],\n  ListInts3: [[I; 7, 8, 9]],\n  ListBytes1: [[B" +
-            "; 1, 2, 3]],\n  ListBytes2: [[B; 4, 5, 6]],\n  ListBytes3: [[B; 7, 8, 9]],\n  Li" +
-            "stLongs1: [[L; 1, 2, 3]],\n  ListLongs2: [[L; 4, 5, 6]],\n  ListLongs3: [[L; 7, " +
-            "8, 9]],\n  ListEnd: [],\n  ListList: [[42]],\n  ListCompound: [{Unknown: 42}]\n}");
+    public static final String DUMMY_STRING_FORMAT_DATA_AFTER_PRETTIFYING = ("{\n    Boolean:" +
+            " 1b,\n    Int: 42,\n    Long: 42l,\n    Byte: 42b,\n    Short: 42s,\n    Float: " +
+            "42.0f,\n    Double: 42.0d,\n    String: \"42\",\n    Ints1: [I; 1, 2, 3],\n    I" +
+            "nts2: [I; 4, 5, 6],\n    Ints3: [I; 7, 8, 9],\n    Bytes1: [B; 1, 2, 3],\n    By" +
+            "tes2: [B; 4, 5, 6],\n    Bytes3: [B; 7, 8, 9],\n    Longs1: [L; 1, 2, 3],\n    L" +
+            "ongs2: [L; 4, 5, 6],\n    Longs3: [L; 7, 8, 9],\n    List: [42],\n    Compound: " +
+            "{Unknown: 42},\n    ListBoolean: [1b],\n    ListInt: [42],\n    ListLong: [42l]," +
+            "\n    ListByte: [42b],\n    ListShort: [42s],\n    ListFloat: [42.0f],\n    List" +
+            "Double: [42.0d],\n    ListString: [\"42\"],\n    ListInts1: [[I; 1, 2, 3]],\n   " +
+            " ListInts2: [[I; 4, 5, 6]],\n    ListInts3: [[I; 7, 8, 9]],\n    ListBytes1: [[B" +
+            "; 1, 2, 3]],\n    ListBytes2: [[B; 4, 5, 6]],\n    ListBytes3: [[B; 7, 8, 9]],\n" +
+            "    ListLongs1: [[L; 1, 2, 3]],\n    ListLongs2: [[L; 4, 5, 6]],\n    ListLongs3" +
+            ": [[L; 7, 8, 9]],\n    ListList: [[42]],\n    ListCompound: [{Unknown: 42}]\n}\n");
 
     private Path tmpFile;
 
