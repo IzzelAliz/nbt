@@ -27,11 +27,6 @@ public final class ShortTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value + "s";
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof ShortTag && this.value == ((ShortTag) o).value;
     }

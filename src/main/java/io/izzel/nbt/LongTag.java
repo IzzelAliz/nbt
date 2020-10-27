@@ -27,11 +27,6 @@ public final class LongTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value + "l";
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof LongTag && this.value == ((LongTag) o).value;
     }

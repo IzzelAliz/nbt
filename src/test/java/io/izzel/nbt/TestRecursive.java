@@ -43,6 +43,15 @@ public class TestRecursive {
             DUMMY_RECURSIVE_TAG.accept(writer);
         }
 
+        String substring = DUMMY_RECURSIVE_TAG.getListOrDefault("DeepRecursiveList").toString();
+
+        assertEquals(substring.length(), 2 * (0x7FF7 + 1));
+
+        for (int i = 0; i <= 0x7FF7; ++i) {
+            assertEquals(substring.charAt(i), '[');
+            assertEquals(substring.charAt(i + 0x7FF7 + 1), ']');
+        }
+
         try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile), true)) {
             CompoundTag newCompoundTag = reader.toCompoundTag();
             Tag tag = newCompoundTag.getOrDefault("DeepRecursiveList");

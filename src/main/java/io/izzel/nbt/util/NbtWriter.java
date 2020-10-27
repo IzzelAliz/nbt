@@ -60,14 +60,12 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
         }
     }
 
-    public void throwException() throws IOException {
+    private void throwException() throws IOException {
         Iterator<IOException> iterator = this.suppressed.iterator();
         if (iterator.hasNext()) {
             IOException exception = iterator.next();
             while (iterator.hasNext()) {
-                IOException next = iterator.next();
-                next.addSuppressed(exception);
-                exception = next;
+                exception.addSuppressed(iterator.next());
             }
             throw exception;
         }
@@ -181,13 +179,13 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
                 try {
                     this.writePrefix(TagType.BYTE_ARRAY);
                     int len = bytes.size();
-                    data.writeInt(len);
+                    this.data.writeInt(len);
                     byte[] bufferArray = new byte[8192];
                     ByteBuffer buffer = ByteBuffer.wrap(bufferArray);
                     for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
                          (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
                         buffer.put(ImmutableBytes.slice(bytes, offset, bufferStep).toByteArray());
-                        data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                        this.data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
                         buffer.rewind();
                     }
                 } catch (IOException e) {
@@ -202,8 +200,8 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
                 try {
                     this.writePrefix(TagType.STRING);
                     byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-                    data.writeShort(bytes.length);
-                    data.write(bytes, 0, bytes.length);
+                    this.data.writeShort(bytes.length);
+                    this.data.write(bytes, 0, bytes.length);
                 } catch (IOException e) {
                     this.suppressed.add(e);
                 }
@@ -240,13 +238,13 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
                 try {
                     this.writePrefix(TagType.INT_ARRAY);
                     int len = ints.size();
-                    data.writeInt(len);
+                    this.data.writeInt(len);
                     byte[] bufferArray = new byte[8192];
                     IntBuffer buffer = ByteBuffer.wrap(bufferArray).asIntBuffer();
                     for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
                          (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
                         buffer.put(ImmutableInts.slice(ints, offset, bufferStep).toIntArray());
-                        data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                        this.data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
                         buffer.rewind();
                     }
                 } catch (IOException e) {
@@ -261,13 +259,13 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
                 try {
                     this.writePrefix(TagType.LONG_ARRAY);
                     int len = longs.size();
-                    data.writeInt(len);
+                    this.data.writeInt(len);
                     byte[] bufferArray = new byte[8192];
                     LongBuffer buffer = ByteBuffer.wrap(bufferArray).asLongBuffer();
                     for (int bufferLimit = buffer.limit(), offset = 0, bufferStep;
                          (bufferStep = Math.min(bufferLimit, len - offset)) > 0; offset += bufferStep) {
                         buffer.put(ImmutableLongs.slice(longs, offset, bufferStep).toLongArray());
-                        data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
+                        this.data.write(bufferArray, 0, 8192 * bufferStep / bufferLimit);
                         buffer.rewind();
                     }
                 } catch (IOException e) {
@@ -278,10 +276,10 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
         private void writePrefix(TagType type) throws IOException {
             if (this.name != null) {
-                data.write(type.getId());
+                this.data.write(type.getId());
                 byte[] bytes = this.name.getBytes(StandardCharsets.UTF_8);
-                data.writeShort(bytes.length);
-                data.write(bytes, 0, bytes.length);
+                this.data.writeShort(bytes.length);
+                this.data.write(bytes, 0, bytes.length);
             }
         }
     }
@@ -303,7 +301,7 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
         public void visitType(TagType tagType) {
             if (this.suppressed.isEmpty()) {
                 try {
-                    data.write(tagType.getId());
+                    this.data.write(tagType.getId());
                 } catch (IOException e) {
                     this.suppressed.add(e);
                 }
@@ -314,9 +312,9 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
         public void visitLength(int length) {
             if (this.suppressed.isEmpty()) {
                 try {
-                    data.writeInt(length);
+                    this.data.writeInt(length);
                     if (this.tmp != null) {
-                        data.write(this.tmp.toByteArray());
+                        this.data.write(this.tmp.toByteArray());
                         this.tmp.close();
                         this.tmp = null;
                     }
@@ -351,10 +349,9 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
         @Override
         public void visitEnd() {
-            super.visitEnd();
             if (this.suppressed.isEmpty()) {
                 try {
-                    data.write(0);
+                    this.data.write(0);
                 } catch (IOException e) {
                     this.suppressed.add(e);
                 }

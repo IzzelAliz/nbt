@@ -233,16 +233,6 @@ public final class CompoundTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        StringJoiner joiner = new StringJoiner(",", "{", "}");
-        for (Entry<?> entry : this.values) {
-            String name = entry.getKey();
-            joiner.add((SIMPLE_KEY.matcher(name).matches() ? name : StringTag.escape(name)) + ":" + entry.getValue());
-        }
-        return joiner.toString();
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (o == this) return true;
         if (o instanceof CompoundTag) {

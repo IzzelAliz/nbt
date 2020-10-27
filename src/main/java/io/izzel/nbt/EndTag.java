@@ -16,11 +16,6 @@ public final class EndTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return "";
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o instanceof EndTag;
     }

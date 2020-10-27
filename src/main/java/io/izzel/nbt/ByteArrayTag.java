@@ -24,11 +24,6 @@ public final class ByteArrayTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value.toString("[B;", ",", "]");
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof ByteArrayTag && this.value.equals(((ByteArrayTag) o).value);
     }

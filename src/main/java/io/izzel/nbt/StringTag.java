@@ -21,11 +21,6 @@ public final class StringTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return escape(this.value);
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof StringTag && this.value.equals(((StringTag) o).value);
     }

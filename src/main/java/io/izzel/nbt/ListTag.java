@@ -219,15 +219,6 @@ public final class ListTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        StringJoiner joiner = new StringJoiner(",", "[", "]");
-        for (Tag tag : this.values) {
-            joiner.add(tag.toString());
-        }
-        return joiner.toString();
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof ListTag && this.values.equals(((ListTag) o).values);
     }

@@ -31,11 +31,6 @@ public final class ByteTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value + "b";
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof ByteTag && this.value == ((ByteTag) o).value;
     }

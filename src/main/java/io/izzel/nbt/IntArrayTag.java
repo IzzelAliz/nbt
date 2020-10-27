@@ -24,11 +24,6 @@ public final class IntArrayTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value.toString("[I;", ",", "]");
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof IntArrayTag && this.value.equals(((IntArrayTag) o).value);
     }

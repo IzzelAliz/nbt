@@ -24,11 +24,6 @@ public final class LongArrayTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value.toString("[L;", ",", "]");
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o instanceof LongArrayTag && this.value.equals(((LongArrayTag) o).value);
     }

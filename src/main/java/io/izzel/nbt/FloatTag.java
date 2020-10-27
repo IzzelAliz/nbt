@@ -21,11 +21,6 @@ public final class FloatTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value + "f";
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof FloatTag && Float.floatToIntBits(this.value) == Float.floatToIntBits(((FloatTag) o).value);
     }

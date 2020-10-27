@@ -43,6 +43,8 @@ public class TestString {
 
     @Test
     public void testParser() throws IOException {
+        assertEquals(TestEnd.DUMMY_END_TAG, new StringNbtReader(new StringReader("")).toTag());
+        assertEquals(TestEnd.DUMMY_END_TAG, new StringNbtReader(new StringReader("  \n")).toTag());
         assertEquals(TestIO.DUMMY_TAG_DATA.toString(), TestIO.DUMMY_STRING_STORED_DATA_WITHOUT_SPACE_CHARACTER);
         assertEquals(TestIO.DUMMY_TAG_DATA, new StringNbtReader(new StringReader(TestIO.DUMMY_STRING_STORED_DATA)).toTag());
         assertEquals(TestIO.DUMMY_TAG_DATA, new StringNbtReader(new StringReader(TestIO.DUMMY_STRING_STORED_DATA_WITHOUT_SPACE_CHARACTER)).toTag());

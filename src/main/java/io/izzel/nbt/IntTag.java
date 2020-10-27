@@ -27,11 +27,6 @@ public final class IntTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return String.valueOf(value);
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof IntTag && this.value == ((IntTag) o).value;
     }

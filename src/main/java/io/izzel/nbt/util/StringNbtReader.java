@@ -2,6 +2,7 @@ package io.izzel.nbt.util;
 
 import io.izzel.nbt.ByteTag;
 import io.izzel.nbt.DoubleTag;
+import io.izzel.nbt.EndTag;
 import io.izzel.nbt.FloatTag;
 import io.izzel.nbt.IntTag;
 import io.izzel.nbt.LongTag;
@@ -94,7 +95,7 @@ public class StringNbtReader implements Closeable {
                     this.readString(((ValueContext) context).tagVisitor);
                     continue;
                 }
-                Tag tag = this.readNumberOrString(TagType.INT, TagType.DOUBLE);
+                Tag tag = this.readNumberOrString(TagType.INT, TagType.DOUBLE, pointer <= 0);
                 if (requiredTagType != TagType.END && requiredTagType != tag.getType()) {
                     throw this.error(ParseFailureException.Type.MIXED_TAG_TYPES_IN_LIST);
                 }
@@ -185,7 +186,7 @@ public class StringNbtReader implements Closeable {
                     stack[pointer++] = new ListContext(listVisitor, TagType.STRING);
                     continue;
                 }
-                Tag tag = this.readNumberOrString(TagType.INT, TagType.DOUBLE);
+                Tag tag = this.readNumberOrString(TagType.INT, TagType.DOUBLE, false);
                 listVisitor.visitType(tag.getType());
                 tag.accept(listVisitor.visitValue());
                 stack[pointer++] = new ListContext(listVisitor, tag.getType());
@@ -244,7 +245,7 @@ public class StringNbtReader implements Closeable {
         ImmutableBytes.Builder builder = ImmutableBytes.builder();
         while (true) {
             this.readCharAfterSpaces();
-            Tag tag = this.readNumberOrString(TagType.BYTE, TagType.END);
+            Tag tag = this.readNumberOrString(TagType.BYTE, TagType.END, false);
             if (tag.getType() == TagType.BYTE) {
                 builder.add(((ByteTag) tag).getByte());
                 char c = this.readCharAfterSpaces();
@@ -268,7 +269,7 @@ public class StringNbtReader implements Closeable {
         ImmutableInts.Builder builder = ImmutableInts.builder();
         while (true) {
             this.readCharAfterSpaces();
-            Tag tag = this.readNumberOrString(TagType.INT, TagType.END);
+            Tag tag = this.readNumberOrString(TagType.INT, TagType.END, false);
             if (tag.getType() == TagType.INT) {
                 builder.add(((IntTag) tag).getInt());
                 char c = this.readCharAfterSpaces();
@@ -292,7 +293,7 @@ public class StringNbtReader implements Closeable {
         ImmutableLongs.Builder builder = ImmutableLongs.builder();
         while (true) {
             this.readCharAfterSpaces();
-            Tag tag = this.readNumberOrString(TagType.LONG, TagType.END);
+            Tag tag = this.readNumberOrString(TagType.LONG, TagType.END, false);
             if (tag.getType() == TagType.LONG) {
                 builder.add(((LongTag) tag).getLong());
                 char c = this.readCharAfterSpaces();
@@ -310,8 +311,8 @@ public class StringNbtReader implements Closeable {
         }
     }
 
-    private Tag readNumberOrString(TagType integerHint, TagType floatingHint) throws IOException {
-        String s = this.readUnquotedString();
+    private Tag readNumberOrString(TagType integerHint, TagType floatingHint, boolean allowEmpty) throws IOException {
+        String s = this.readUnquotedString(allowEmpty);
         try {
             Matcher matcher;
             TagType tagType = TagType.END;
@@ -348,11 +349,11 @@ public class StringNbtReader implements Closeable {
             }
             throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            return StringTag.of(s);
+            return s.isEmpty() ? EndTag.of() : StringTag.of(s);
         }
     }
 
-    private String readUnquotedString() throws IOException {
+    private String readUnquotedString(boolean allowEmpty) throws IOException {
         StringBuilder sb = new StringBuilder();
         char c = this.peek;
         while (true) {
@@ -366,7 +367,7 @@ public class StringNbtReader implements Closeable {
                 c = this.readNextChar();
                 continue;
             }
-            if (sb.length() > 0) {
+            if (sb.length() > 0 || allowEmpty) {
                 return sb.toString();
             }
             this.readCharAfterSpaces();
@@ -381,7 +382,7 @@ public class StringNbtReader implements Closeable {
             this.readNextChar();
             return tagVisitor;
         }
-        return visitor.visit(this.readUnquotedString());
+        return visitor.visit(this.readUnquotedString(false));
     }
 
     private void readString(TagValueVisitor visitor) throws IOException {

@@ -21,11 +21,6 @@ public final class DoubleTag extends Tag {
     }
 
     @Override
-    public String toString() {
-        return this.value + "d";
-    }
-
-    @Override
     public boolean equals(Object o) {
         return o == this || o instanceof DoubleTag && Double.doubleToLongBits(this.value) == Double.doubleToLongBits(((DoubleTag) o).value);
     }
