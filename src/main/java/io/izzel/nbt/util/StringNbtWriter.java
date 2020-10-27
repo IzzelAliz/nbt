@@ -12,6 +12,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class StringNbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
@@ -242,6 +243,8 @@ public class StringNbtWriter extends TagValueVisitor implements Flushable, Close
 
     private static final class CompoundWriter extends TagCompoundVisitor {
 
+        private static final Pattern SIMPLE_KEY = Pattern.compile("[A-Za-z0-9._+-]+");
+
         private boolean notFirst;
 
         private final Writer data;
@@ -257,8 +260,9 @@ public class StringNbtWriter extends TagValueVisitor implements Flushable, Close
         public TagValueVisitor visit(String key) {
             if (this.suppressed.isEmpty()) {
                 try {
+                    String escapedKey = SIMPLE_KEY.matcher(key).matches() ? key : StringTag.escape(key);
                     this.data.write(this.notFirst ? "," : "{");
-                    this.data.write(key);
+                    this.data.write(escapedKey);
                     this.data.write(":");
                     this.notFirst = true;
                 } catch (IOException e) {
