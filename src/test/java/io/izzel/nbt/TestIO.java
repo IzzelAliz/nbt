@@ -1,5 +1,6 @@
 package io.izzel.nbt;
 
+import io.izzel.nbt.util.CompressedNbtReader;
 import io.izzel.nbt.util.NbtReader;
 import io.izzel.nbt.util.TagReader;
 import org.junit.After;
@@ -126,14 +127,20 @@ public class TestIO {
     public void testInitial() throws IOException {
         new TagReader(DUMMY_TAG_DATA).toBinaryFile(this.tmpFile);
         assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_DATA);
+        assertEquals(new NbtReader(DUMMY_DATA).toCompoundTag(), DUMMY_TAG_DATA);
         assertEquals(new NbtReader(this.tmpFile).toCompoundTag(), DUMMY_TAG_DATA);
+        assertArrayEquals(new TagReader(DUMMY_TAG_DATA).toBinaryNbt(), DUMMY_DATA);
+        assertEquals(new NbtReader(this.tmpFile).toStringNbt(), DUMMY_STRING_FORMAT_DATA_WITHOUT_SPACE_CHARACTER);
     }
 
     @Test
     public void testGzipped() throws IOException {
-        new TagReader(DUMMY_TAG_DATA).toGzippedBinaryFile(this.tmpFile);
+        new TagReader(DUMMY_TAG_DATA).toCompressedBinaryFile(this.tmpFile);
         assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_COMPRESSED_DATA);
-        assertEquals(new NbtReader(this.tmpFile, true).toCompoundTag(), DUMMY_TAG_DATA);
+        assertEquals(new CompressedNbtReader(this.tmpFile).toCompoundTag(), DUMMY_TAG_DATA);
+        assertEquals(new CompressedNbtReader(DUMMY_COMPRESSED_DATA).toCompoundTag(), DUMMY_TAG_DATA);
+        assertArrayEquals(new TagReader(DUMMY_TAG_DATA).toCompressedBinaryNbt(), DUMMY_COMPRESSED_DATA);
+        assertEquals(new CompressedNbtReader(this.tmpFile).toStringNbt(), DUMMY_STRING_FORMAT_DATA_WITHOUT_SPACE_CHARACTER);
     }
 
     @Test

@@ -18,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
@@ -31,14 +30,6 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
 
     public NbtWriter(OutputStream stream, String name) throws IOException {
         this(stream instanceof DataOutputStream ? (DataOutputStream) stream : new DataOutputStream(stream), name, new ArrayList<>(1));
-    }
-
-    public NbtWriter(OutputStream stream, boolean gzip) throws IOException {
-        this(gzip ? new GZIPOutputStream(stream) : stream);
-    }
-
-    public NbtWriter(OutputStream stream, boolean gzip, String name) throws IOException {
-        this(gzip ? new GZIPOutputStream(stream) : stream, name);
     }
 
     @Override

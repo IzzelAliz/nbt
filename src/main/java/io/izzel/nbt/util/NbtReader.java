@@ -7,7 +7,12 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -17,7 +22,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.GZIPInputStream;
 
 public class NbtReader implements Closeable {
 
@@ -31,24 +35,12 @@ public class NbtReader implements Closeable {
         this.name = this.tagType != TagType.END ? nextString() : "";
     }
 
-    public NbtReader(InputStream stream, boolean gzip) throws IOException {
-        this(gzip ? new GZIPInputStream(stream) : stream);
-    }
-
     public NbtReader(Path path) throws IOException {
         this(Files.newInputStream(path));
     }
 
-    public NbtReader(Path path, boolean gzip) throws IOException {
-        this(Files.newInputStream(path), gzip);
-    }
-
     public NbtReader(byte[] bytes) throws IOException {
         this(new ByteArrayInputStream(bytes));
-    }
-
-    public NbtReader(byte[] bytes, boolean gzip) throws IOException {
-        this(new ByteArrayInputStream(bytes), gzip);
     }
 
     public void accept(TagValueVisitor visitor) throws IOException {

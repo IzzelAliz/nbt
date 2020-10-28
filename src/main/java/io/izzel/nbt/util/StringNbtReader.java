@@ -102,18 +102,18 @@ public class StringNbtReader implements Closeable {
         }
     }
 
-    public byte[] toGzippedBinaryNbt() throws IOException {
+    public byte[] toCompressedBinaryNbt() throws IOException {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            try (NbtWriter nbtWriter = new NbtWriter(stream, true)) {
+            try (CompressedNbtWriter nbtWriter = new CompressedNbtWriter(stream)) {
                 this.accept(nbtWriter);
             }
             return stream.toByteArray();
         }
     }
 
-    public void toGzippedBinaryFile(Path file) throws IOException {
+    public void toCompressedBinaryFile(Path file) throws IOException {
         try (OutputStream stream = Files.newOutputStream(file)) {
-            try (NbtWriter nbtWriter = new NbtWriter(stream, true)) {
+            try (CompressedNbtWriter nbtWriter = new CompressedNbtWriter(stream)) {
                 this.accept(nbtWriter);
             }
         }

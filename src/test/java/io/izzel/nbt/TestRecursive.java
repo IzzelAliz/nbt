@@ -1,6 +1,6 @@
 package io.izzel.nbt;
 
-import io.izzel.nbt.util.NbtReader;
+import io.izzel.nbt.util.CompressedNbtReader;
 import io.izzel.nbt.util.StringNbtReader;
 import io.izzel.nbt.util.TagReader;
 import org.junit.After;
@@ -73,8 +73,8 @@ public class TestRecursive {
             assertEquals(substring.charAt(i + 0x7FF7 + 1), ']');
         }
 
-        new TagReader(DUMMY_RECURSIVE_LIST_TAG).toGzippedBinaryFile(this.tmpFile);
-        Tag tag = new NbtReader(this.tmpFile, true).toCompoundTag().getOrDefault("DeepRecursiveList");
+        new TagReader(DUMMY_RECURSIVE_LIST_TAG).toCompressedBinaryFile(this.tmpFile);
+        Tag tag = new CompressedNbtReader(this.tmpFile).toCompoundTag().getOrDefault("DeepRecursiveList");
 
         assertEquals(tag, subtag);
         for (int i = 0; i < 0x7FF7; ++i) {
@@ -103,8 +103,8 @@ public class TestRecursive {
             }
         }
 
-        new TagReader(DUMMY_RECURSIVE_COMPOUND_TAG).toGzippedBinaryFile(this.tmpFile);
-        Tag tag = new NbtReader(this.tmpFile, true).toCompoundTag().getOrDefault("DeepRecursiveCompound");
+        new TagReader(DUMMY_RECURSIVE_COMPOUND_TAG).toCompressedBinaryFile(this.tmpFile);
+        Tag tag = new CompressedNbtReader(this.tmpFile).toCompoundTag().getOrDefault("DeepRecursiveCompound");
 
         assertEquals(tag, subtag);
         for (int i = 0; i < 0x7FF7; ++i) {
@@ -135,8 +135,8 @@ public class TestRecursive {
             }
         }
 
-        new TagReader(DUMMY_RECURSIVE_COMPOUND_LIST_TAG).toGzippedBinaryFile(this.tmpFile);
-        Tag tag = new NbtReader(this.tmpFile, true).toCompoundTag().getOrDefault("DeepRecursiveCompoundList");
+        new TagReader(DUMMY_RECURSIVE_COMPOUND_LIST_TAG).toCompressedBinaryFile(this.tmpFile);
+        Tag tag = new CompressedNbtReader(this.tmpFile).toCompoundTag().getOrDefault("DeepRecursiveCompoundList");
 
         assertEquals(tag, subtag);
         for (int i = 0; i < 0x7FF7; ++i) {
