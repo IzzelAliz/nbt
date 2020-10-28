@@ -97,8 +97,8 @@ public class TestIO {
             ",ListBytes2:[[B;4,5,6]],ListBytes3:[[B;7,8,9]],ListLongs1:[[L;1,2,3]],ListLongs2" +
             ":[[L;4,5,6]],ListLongs3:[[L;7,8,9]],ListList:[[42]],ListCompound:[{Unknown:42}]}");
 
-    public static final String DUMMY_STRING_FORMAT_DATA_AFTER_PRETTIFYING = ("{\n    Boolean:" +
-            " 1b,\n    Int: 42,\n    Long: 42l,\n    Byte: 42b,\n    Short: 42s,\n    Float: " +
+    public static final String DUMMY_STRING_FORMAT_DATA_AFTER_FORMATTER = ("{\n    Boolean: t" +
+            "rue,\n    Int: 42,\n    Long: 42l,\n    Byte: 42b,\n    Short: 42s,\n    Float: " +
             "42.0f,\n    Double: 42.0d,\n    String: \"42\",\n    Ints1: [I; 1, 2, 3],\n    I" +
             "nts2: [I; 4, 5, 6],\n    Ints3: [I; 7, 8, 9],\n    Bytes1: [B; 1, 2, 3],\n    By" +
             "tes2: [B; 4, 5, 6],\n    Bytes3: [B; 7, 8, 9],\n    Longs1: [L; 1, 2, 3],\n    L" +

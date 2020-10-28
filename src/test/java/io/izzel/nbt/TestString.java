@@ -45,7 +45,7 @@ public class TestString {
         assertEquals(TestEnd.DUMMY_END_TAG, new StringNbtReader("").toTag());
         assertEquals(TestEnd.DUMMY_END_TAG, new StringNbtReader("  \n").toTag());
         assertEquals(TestIO.DUMMY_TAG_DATA.toString(), TestIO.DUMMY_STRING_FORMAT_DATA_WITHOUT_SPACE_CHARACTER);
-        assertEquals(TestIO.DUMMY_TAG_DATA, new StringNbtReader(TestIO.DUMMY_STRING_FORMAT_DATA_AFTER_PRETTIFYING).toCompoundTag());
+        assertEquals(TestIO.DUMMY_TAG_DATA, new StringNbtReader(TestIO.DUMMY_STRING_FORMAT_DATA_AFTER_FORMATTER).toCompoundTag());
         assertEquals(TestIO.DUMMY_TAG_DATA, new StringNbtReader(TestIO.DUMMY_STRING_FORMAT_DATA_WITHOUT_SPACE_CHARACTER).toCompoundTag());
     }
 }
