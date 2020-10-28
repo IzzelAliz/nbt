@@ -1,6 +1,7 @@
 package io.izzel.nbt.util;
 
 import io.izzel.nbt.ByteTag;
+import io.izzel.nbt.CompoundTag;
 import io.izzel.nbt.DoubleTag;
 import io.izzel.nbt.EndTag;
 import io.izzel.nbt.FloatTag;
@@ -14,9 +15,14 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,19 +58,65 @@ public class StringNbtReader implements Closeable {
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        this.data.close();
+    public StringNbtReader(String string) throws IOException {
+        this(new StringReader(string));
     }
 
     public void accept(TagValueVisitor visitor) throws IOException {
         this.read(new ValueContext(visitor, TagType.END));
     }
 
+    @Override
+    public void close() throws IOException {
+        this.data.close();
+    }
+
     public Tag toTag() throws IOException {
         TagWriter writer = new TagWriter();
         this.accept(writer);
         return writer.getTag();
+    }
+
+    public CompoundTag toCompoundTag() throws IOException {
+        Tag tag = this.toTag();
+        if (tag.getType() != TagType.COMPOUND) {
+            throw new IOException("Expect " + TagType.COMPOUND.getTagName() + " but got " + tag.getType());
+        }
+        return (CompoundTag) tag;
+    }
+
+    public byte[] toBinaryNbt() throws IOException {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream)) {
+                this.accept(nbtWriter);
+            }
+            return stream.toByteArray();
+        }
+    }
+
+    public void toBinaryFile(Path file) throws IOException {
+        try (OutputStream stream = Files.newOutputStream(file)) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream)) {
+                this.accept(nbtWriter);
+            }
+        }
+    }
+
+    public byte[] toGzippedBinaryNbt() throws IOException {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream, true)) {
+                this.accept(nbtWriter);
+            }
+            return stream.toByteArray();
+        }
+    }
+
+    public void toGzippedBinaryFile(Path file) throws IOException {
+        try (OutputStream stream = Files.newOutputStream(file)) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream, true)) {
+                this.accept(nbtWriter);
+            }
+        }
     }
 
     private void read(ValueContext initContext) throws IOException {

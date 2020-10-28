@@ -1,20 +1,21 @@
 package io.izzel.nbt.util;
 
 import io.izzel.nbt.CompoundTag;
+import io.izzel.nbt.Tag;
 import io.izzel.nbt.TagType;
 import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-import java.io.Closeable;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 
@@ -27,11 +28,27 @@ public class NbtReader implements Closeable {
     public NbtReader(InputStream stream) throws IOException {
         this.data = stream instanceof DataInputStream ? (DataInputStream) stream : new DataInputStream(stream);
         this.tagType = nextType();
-        this.name = nextString();
+        this.name = this.tagType != TagType.END ? nextString() : "";
     }
 
     public NbtReader(InputStream stream, boolean gzip) throws IOException {
         this(gzip ? new GZIPInputStream(stream) : stream);
+    }
+
+    public NbtReader(Path path) throws IOException {
+        this(Files.newInputStream(path));
+    }
+
+    public NbtReader(Path path, boolean gzip) throws IOException {
+        this(Files.newInputStream(path), gzip);
+    }
+
+    public NbtReader(byte[] bytes) throws IOException {
+        this(new ByteArrayInputStream(bytes));
+    }
+
+    public NbtReader(byte[] bytes, boolean gzip) throws IOException {
+        this(new ByteArrayInputStream(bytes), gzip);
     }
 
     public void accept(TagValueVisitor visitor) throws IOException {
@@ -43,17 +60,33 @@ public class NbtReader implements Closeable {
         this.data.close();
     }
 
-    public CompoundTag.Entry<?> toCompoundTagEntry() throws IOException {
-        TagWriter reader = new TagWriter();
-        this.accept(reader);
-        return CompoundTag.entry(this.name, reader.getTag());
+    public Tag toTag() throws IOException {
+        TagWriter writer = new TagWriter();
+        this.read(new ValueContext(writer, this.tagType));
+        return writer.getTag();
     }
 
     public CompoundTag toCompoundTag() throws IOException {
-        return (CompoundTag) this.toCompoundTagEntry().getValue();
+        Tag tag = this.toTag();
+        if (tag.getType() != TagType.COMPOUND) {
+            throw new IOException("Expect " + TagType.COMPOUND.getTagName() + " but got " + tag.getType());
+        }
+        return (CompoundTag) tag;
+    }
+
+    public String toStringNbt() throws IOException {
+        try (StringWriter writer = new StringWriter()) {
+            try (StringNbtWriter stringNbtWriter = new StringNbtWriter(writer)) {
+                this.accept(stringNbtWriter);
+            }
+            return writer.toString();
+        }
     }
 
     public String getName() {
+        if (this.tagType == TagType.END) {
+            throw new NoSuchElementException("End tag does not have a name");
+        }
         return this.name;
     }
 

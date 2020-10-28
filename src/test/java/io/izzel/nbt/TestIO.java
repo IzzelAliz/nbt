@@ -1,7 +1,7 @@
 package io.izzel.nbt;
 
 import io.izzel.nbt.util.NbtReader;
-import io.izzel.nbt.util.NbtWriter;
+import io.izzel.nbt.util.TagReader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,32 +124,16 @@ public class TestIO {
 
     @Test
     public void testInitial() throws IOException {
-        try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile))) {
-            DUMMY_TAG_DATA.accept(writer);
-            writer.flush();
-        }
-
+        new TagReader(DUMMY_TAG_DATA).toBinaryFile(this.tmpFile);
         assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_DATA);
-
-        try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile))) {
-            CompoundTag generated = reader.toCompoundTag();
-            assertEquals(DUMMY_TAG_DATA, generated);
-        }
+        assertEquals(new NbtReader(this.tmpFile).toCompoundTag(), DUMMY_TAG_DATA);
     }
 
     @Test
     public void testGzipped() throws IOException {
-        try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile), true)) {
-            DUMMY_TAG_DATA.accept(writer);
-            writer.flush();
-        }
-
+        new TagReader(DUMMY_TAG_DATA).toGzippedBinaryFile(this.tmpFile);
         assertArrayEquals(Files.readAllBytes(this.tmpFile), DUMMY_COMPRESSED_DATA);
-
-        try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile), true)) {
-            CompoundTag generated = reader.toCompoundTag();
-            assertEquals(DUMMY_TAG_DATA, generated);
-        }
+        assertEquals(new NbtReader(this.tmpFile, true).toCompoundTag(), DUMMY_TAG_DATA);
     }
 
     @Test
@@ -161,15 +145,8 @@ public class TestIO {
                 .add("Ints", IntArrayTag.of(ByteBuffer.wrap(bytes).asIntBuffer()))
                 .add("Longs", LongArrayTag.of(ByteBuffer.wrap(bytes).asLongBuffer())).build();
 
-        try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile))) {
-            compoundTag.accept(writer);
-            writer.flush();
-        }
-
-        try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile))) {
-            CompoundTag newCompoundTag = reader.toCompoundTag();
-            assertEquals(compoundTag, newCompoundTag);
-        }
+        new TagReader(compoundTag).toBinaryFile(this.tmpFile);
+        assertEquals(new NbtReader(this.tmpFile).toCompoundTag(), compoundTag);
     }
 
     @Test
@@ -182,16 +159,15 @@ public class TestIO {
         byte[] bytes = new byte[0x7FFFFFF7];
         new Random(TestNumber.DUMMY_LONG).nextBytes(bytes);
         CompoundTag compoundTag = CompoundTag.builder().add("Bytes", bytes).build();
-        try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile))) {
-            compoundTag.accept(writer);
-            return MessageDigest.getInstance("SHA-256").digest(bytes);
-        }
+
+        new TagReader(compoundTag).toBinaryFile(this.tmpFile);
+        return MessageDigest.getInstance("SHA-256").digest(bytes);
     }
 
     private byte[] newBytesSHA256() throws IOException, GeneralSecurityException {
-        try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile))) {
-            byte[] bytes = reader.toCompoundTag().getBytesOrDefault("Bytes").toByteArray();
-            return MessageDigest.getInstance("SHA-256").digest(bytes);
-        }
+        CompoundTag compoundTag = new NbtReader(this.tmpFile).toCompoundTag();
+        byte[] bytes = compoundTag.getBytesOrDefault("Bytes").toByteArray();
+
+        return MessageDigest.getInstance("SHA-256").digest(bytes);
     }
 }

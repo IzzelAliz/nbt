@@ -7,6 +7,12 @@ import io.izzel.nbt.visitor.TagCompoundVisitor;
 import io.izzel.nbt.visitor.TagListVisitor;
 import io.izzel.nbt.visitor.TagValueVisitor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -19,6 +25,49 @@ public class TagReader {
 
     public void accept(TagValueVisitor visitor) {
         this.read(new ValueContext(visitor, this.tag));
+    }
+
+    public String toStringNbt() throws IOException {
+        try (StringWriter writer = new StringWriter()) {
+            try (StringNbtWriter stringNbtWriter = new StringNbtWriter(writer)) {
+                this.accept(stringNbtWriter);
+            }
+            return writer.toString();
+        }
+    }
+
+    public byte[] toBinaryNbt() throws IOException {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream)) {
+                this.accept(nbtWriter);
+            }
+            return stream.toByteArray();
+        }
+    }
+
+    public void toBinaryFile(Path file) throws IOException {
+        try (OutputStream stream = Files.newOutputStream(file)) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream)) {
+                this.accept(nbtWriter);
+            }
+        }
+    }
+
+    public byte[] toGzippedBinaryNbt() throws IOException {
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream, true)) {
+                this.accept(nbtWriter);
+            }
+            return stream.toByteArray();
+        }
+    }
+
+    public void toGzippedBinaryFile(Path file) throws IOException {
+        try (OutputStream stream = Files.newOutputStream(file)) {
+            try (NbtWriter nbtWriter = new NbtWriter(stream, true)) {
+                this.accept(nbtWriter);
+            }
+        }
     }
 
     private void read(ValueContext initContext) {

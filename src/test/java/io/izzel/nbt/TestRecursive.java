@@ -1,14 +1,13 @@
 package io.izzel.nbt;
 
 import io.izzel.nbt.util.NbtReader;
-import io.izzel.nbt.util.NbtWriter;
 import io.izzel.nbt.util.StringNbtReader;
+import io.izzel.nbt.util.TagReader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -63,44 +62,36 @@ public class TestRecursive {
 
     @Test
     public void testDeepRecursiveList() throws IOException {
-        try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile), true)) {
-            DUMMY_RECURSIVE_LIST_TAG.accept(writer);
-        }
-
         Tag subtag = DUMMY_RECURSIVE_LIST_TAG.getOrDefault("DeepRecursiveList");
 
         String substring = subtag.toString();
         assertEquals(substring.length(), 2 * 0x7FF7 + 2);
-        assertEquals(new StringNbtReader(new StringReader(substring)).toTag(), subtag);
+        assertEquals(new StringNbtReader(substring).toTag(), subtag);
 
         for (int i = 0; i <= 0x7FF7; ++i) {
             assertEquals(substring.charAt(i), '[');
             assertEquals(substring.charAt(i + 0x7FF7 + 1), ']');
         }
 
-        try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile), true)) {
-            Tag tag = reader.toCompoundTag().getOrDefault("DeepRecursiveList");
-            assertEquals(tag, subtag);
-            for (int i = 0; i < 0x7FF7; ++i) {
-                assertEquals(tag.getType(), TagType.LIST);
-                tag = ((ListTag) tag).getOrDefault(0);
-            }
+        new TagReader(DUMMY_RECURSIVE_LIST_TAG).toGzippedBinaryFile(this.tmpFile);
+        Tag tag = new NbtReader(this.tmpFile, true).toCompoundTag().getOrDefault("DeepRecursiveList");
+
+        assertEquals(tag, subtag);
+        for (int i = 0; i < 0x7FF7; ++i) {
             assertEquals(tag.getType(), TagType.LIST);
-            assertEquals(((ListTag) tag).size(), 0);
+            tag = ((ListTag) tag).getOrDefault(0);
         }
+        assertEquals(tag.getType(), TagType.LIST);
+        assertEquals(((ListTag) tag).size(), 0);
     }
 
     @Test
     public void testDeepRecursiveCompound() throws IOException {
-        try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile), true)) {
-            DUMMY_RECURSIVE_COMPOUND_TAG.accept(writer);
-        }
-
         Tag subtag = DUMMY_RECURSIVE_COMPOUND_TAG.getOrDefault("DeepRecursiveCompound");
 
         String substring = subtag.toString();
         assertEquals(substring.length(), 5 * 0x7FF7 + 2);
-        assertEquals(new StringNbtReader(new StringReader(substring)).toTag(), subtag);
+        assertEquals(new StringNbtReader(substring).toTag(), subtag);
 
         for (int i = 0; i <= 0x7FF7; ++i) {
             assertEquals(substring.charAt(i * 4), '{');
@@ -112,29 +103,25 @@ public class TestRecursive {
             }
         }
 
-        try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile), true)) {
-            Tag tag = reader.toCompoundTag().getOrDefault("DeepRecursiveCompound");
-            assertEquals(tag, subtag);
-            for (int i = 0; i < 0x7FF7; ++i) {
-                assertEquals(tag.getType(), TagType.COMPOUND);
-                tag = ((CompoundTag) tag).getOrDefault("");
-            }
+        new TagReader(DUMMY_RECURSIVE_COMPOUND_TAG).toGzippedBinaryFile(this.tmpFile);
+        Tag tag = new NbtReader(this.tmpFile, true).toCompoundTag().getOrDefault("DeepRecursiveCompound");
+
+        assertEquals(tag, subtag);
+        for (int i = 0; i < 0x7FF7; ++i) {
             assertEquals(tag.getType(), TagType.COMPOUND);
-            assertEquals(((CompoundTag) tag).names().size(), 0);
+            tag = ((CompoundTag) tag).getOrDefault("");
         }
+        assertEquals(tag.getType(), TagType.COMPOUND);
+        assertEquals(((CompoundTag) tag).names().size(), 0);
     }
 
     @Test
     public void testDeepRecursiveCompoundList() throws IOException {
-        try (NbtWriter writer = new NbtWriter(Files.newOutputStream(this.tmpFile), true)) {
-            DUMMY_RECURSIVE_COMPOUND_LIST_TAG.accept(writer);
-        }
-
         Tag subtag = DUMMY_RECURSIVE_COMPOUND_LIST_TAG.getOrDefault("DeepRecursiveCompoundList");
 
         String substring = subtag.toString();
         assertEquals(substring.length(), 7 * 0x7FF7 + 2);
-        assertEquals(new StringNbtReader(new StringReader(substring)).toTag(), subtag);
+        assertEquals(new StringNbtReader(substring).toTag(), subtag);
 
         for (int i = 0; i <= 0x7FF7; ++i) {
             assertEquals(substring.charAt(i * 5), '[');
@@ -148,17 +135,17 @@ public class TestRecursive {
             }
         }
 
-        try (NbtReader reader = new NbtReader(Files.newInputStream(this.tmpFile), true)) {
-            Tag tag = reader.toCompoundTag().getOrDefault("DeepRecursiveCompoundList");
-            assertEquals(tag, subtag);
-            for (int i = 0; i < 0x7FF7; ++i) {
-                assertEquals(tag.getType(), TagType.LIST);
-                tag = ((ListTag) tag).getOrDefault(0);
-                assertEquals(tag.getType(), TagType.COMPOUND);
-                tag = ((CompoundTag) tag).getOrDefault("");
-            }
+        new TagReader(DUMMY_RECURSIVE_COMPOUND_LIST_TAG).toGzippedBinaryFile(this.tmpFile);
+        Tag tag = new NbtReader(this.tmpFile, true).toCompoundTag().getOrDefault("DeepRecursiveCompoundList");
+
+        assertEquals(tag, subtag);
+        for (int i = 0; i < 0x7FF7; ++i) {
             assertEquals(tag.getType(), TagType.LIST);
-            assertEquals(((ListTag) tag).size(), 0);
+            tag = ((ListTag) tag).getOrDefault(0);
+            assertEquals(tag.getType(), TagType.COMPOUND);
+            tag = ((CompoundTag) tag).getOrDefault("");
         }
+        assertEquals(tag.getType(), TagType.LIST);
+        assertEquals(((ListTag) tag).size(), 0);
     }
 }
