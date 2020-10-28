@@ -272,7 +272,7 @@ public final class ListTag extends Tag {
     }
 
     public static final class Builder {
-        private final List<Tag> values;
+        private List<Tag> values;
         private TagType tagType;
 
         private Builder(List<Tag> values, TagType type) {
@@ -289,6 +289,9 @@ public final class ListTag extends Tag {
             }
             if (tagType != tag.getType()) {
                 throw new IllegalArgumentException("Unmatched tag type (required " + tagType + ")");
+            }
+            if (values == null) {
+                throw new IllegalStateException("this builder has been frozen since build method was called");
             }
             values.add(tag);
             return this;
@@ -363,10 +366,12 @@ public final class ListTag extends Tag {
         }
 
         public ListTag build() {
+            List<Tag> values = this.values;
             if (values.isEmpty()) {
-                return ListTag.CACHE[tagType.ordinal()];
+                return ListTag.CACHE[this.tagType.ordinal()];
             }
-            return new ListTag(tagType, values);
+            this.values = null; // make the builder frozen
+            return new ListTag(this.tagType, values);
         }
     }
 }

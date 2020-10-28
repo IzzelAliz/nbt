@@ -142,10 +142,14 @@ public class ImmutableBytes implements Iterable<Byte> {
         }
 
         private byte[] growIfNecessary(int size) {
-            int old = this.value.length;
+            byte[] oldValue = this.value;
+            if (oldValue == null) {
+                throw new IllegalStateException("this builder has been frozen since build method was called");
+            }
+            int old = oldValue.length;
             if (this.length > old - size) {
                 int diff = Math.max(Math.min(old / 2, 0x7FFFFFF7 - old), Math.min(size, 0x7FFFFFF7 - old));
-                byte[] newValue = Arrays.copyOf(this.value, old + diff);
+                byte[] newValue = Arrays.copyOf(oldValue, old + diff);
                 this.value = newValue;
                 return newValue;
             }
@@ -178,7 +182,9 @@ public class ImmutableBytes implements Iterable<Byte> {
             if (this.length == 0) {
                 return ImmutableBytes.EMPTY;
             }
-            return new ImmutableBytes(this.value, 0, this.length);
+            byte[] value = this.value;
+            this.value = null; // make the builder frozen
+            return new ImmutableBytes(value, 0, this.length);
         }
     }
 }

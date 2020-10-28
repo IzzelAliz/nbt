@@ -330,7 +330,7 @@ public final class CompoundTag extends Tag {
 
     public static final class Builder {
         private final NavigableMap<String, List<Entry<?>>> entryMap;
-        private final List<Entry<?>> entries;
+        private List<Entry<?>> entries;
 
         private final boolean allowDuplicate;
 
@@ -418,6 +418,9 @@ public final class CompoundTag extends Tag {
                 String escapedName = SIMPLE_KEY.matcher(entryName).matches() ? entryName : StringTag.escape(entryName);
                 throw new IllegalArgumentException("Compound tags do not allow end tag values, name: " + escapedName);
             }
+            if (this.entries == null) {
+                throw new IllegalStateException("this builder has been frozen since build method was called");
+            }
             if (!this.entryMap.containsKey(entryName)) {
                 List<Entry<?>> entries = Collections.singletonList(entry);
                 this.entryMap.put(entryName, entries);
@@ -439,7 +442,9 @@ public final class CompoundTag extends Tag {
             if (this.entryMap.isEmpty()) {
                 return CompoundTag.EMPTY;
             }
-            return new CompoundTag(this.entryMap, this.entries);
+            final List<Entry<?>> entries = this.entries;
+            this.entries = null; // make the builder frozen
+            return new CompoundTag(this.entryMap, entries);
         }
     }
 }

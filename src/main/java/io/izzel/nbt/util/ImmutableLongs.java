@@ -142,10 +142,14 @@ public class ImmutableLongs implements Iterable<Long> {
         }
 
         private long[] growIfNecessary(int size) {
-            int old = this.value.length;
+            long[] oldValue = this.value;
+            if (oldValue == null) {
+                throw new IllegalStateException("this builder has been frozen since build method was called");
+            }
+            int old = oldValue.length;
             if (this.length > old - size) {
                 int diff = Math.max(Math.min(old / 2, 0x7FFFFFF7 - old), Math.min(size, 0x7FFFFFF7 - old));
-                long[] newValue = Arrays.copyOf(this.value, old + diff);
+                long[] newValue = Arrays.copyOf(oldValue, old + diff);
                 this.value = newValue;
                 return newValue;
             }
@@ -178,7 +182,9 @@ public class ImmutableLongs implements Iterable<Long> {
             if (this.length == 0) {
                 return ImmutableLongs.EMPTY;
             }
-            return new ImmutableLongs(this.value, 0, this.length);
+            long[] value = this.value;
+            this.value = null; // make the builder frozen
+            return new ImmutableLongs(value, 0, this.length);
         }
     }
 }

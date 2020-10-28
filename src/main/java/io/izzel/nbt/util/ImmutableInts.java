@@ -142,10 +142,14 @@ public class ImmutableInts implements Iterable<Integer> {
         }
 
         private int[] growIfNecessary(int size) {
-            int old = this.value.length;
+            int[] oldValue = this.value;
+            if (oldValue == null) {
+                throw new IllegalStateException("this builder has been frozen since build method was called");
+            }
+            int old = oldValue.length;
             if (this.length > old - size) {
                 int diff = Math.max(Math.min(old / 2, 0x7FFFFFF7 - old), Math.min(size, 0x7FFFFFF7 - old));
-                int[] newValue = Arrays.copyOf(this.value, old + diff);
+                int[] newValue = Arrays.copyOf(oldValue, old + diff);
                 this.value = newValue;
                 return newValue;
             }
@@ -178,7 +182,9 @@ public class ImmutableInts implements Iterable<Integer> {
             if (this.length == 0) {
                 return ImmutableInts.EMPTY;
             }
-            return new ImmutableInts(this.value, 0, this.length);
+            int[] value = this.value;
+            this.value = null; // make the builder frozen
+            return new ImmutableInts(value, 0, this.length);
         }
     }
 }
