@@ -4,6 +4,8 @@ Java NBT (Named Binary Tag) library.
 
 ## Getting started
 
+For Gradle projects:
+
 ```groovy
 repositories {
     maven { url 'https://maven.izzel.io/releases' }
@@ -85,7 +87,7 @@ The library is under [MIT license](https://github.com/IzzelAliz/nbt/tree/master/
 
 Linux or macOS:
 
-```sh
+```shell
 git clone https://github.com/IzzelAliz/nbt.git IzzelAlizNBT --depth 20
 cd IzzelAlizNBT/
 ./gradlew build --exclude-task test
@@ -93,7 +95,7 @@ cd IzzelAlizNBT/
 
 Microsoft Windows:
 
-```bat
+```shell
 git clone https://github.com/IzzelAliz/nbt.git IzzelAlizNBT --depth 20
 cd IzzelAlizNBT/
 gradlew.bat build --exclude-task test
