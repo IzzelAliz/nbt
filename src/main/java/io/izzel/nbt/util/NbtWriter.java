@@ -277,9 +277,11 @@ public class NbtWriter extends TagValueVisitor implements Flushable, Closeable {
         private void writePrefix(TagType type) throws IOException {
             if (this.name != null) {
                 this.data.write(type.getId());
-                byte[] bytes = this.name.getBytes(StandardCharsets.UTF_8);
-                this.data.writeShort(bytes.length);
-                this.data.write(bytes, 0, bytes.length);
+                if (type != TagType.END) {
+                    byte[] bytes = this.name.getBytes(StandardCharsets.UTF_8);
+                    this.data.writeShort(bytes.length);
+                    this.data.write(bytes, 0, bytes.length);
+                }
             }
         }
     }
