@@ -24,10 +24,10 @@ public final class CompoundTag extends Tag {
 
     private static final Pattern SIMPLE_KEY = Pattern.compile("[A-Za-z0-9._+-]+");
 
-    private final NavigableMap<String, List<Entry<?>>> valueMap;
+    private final NavigableMap<String, Entry<?>> valueMap;
     private final List<Entry<?>> values;
 
-    private CompoundTag(NavigableMap<String, List<Entry<?>>> entryMap, List<Entry<?>> entries) {
+    private CompoundTag(NavigableMap<String, Entry<?>> entryMap, List<Entry<?>> entries) {
         super(TagType.COMPOUND);
         this.values = Collections.unmodifiableList(entries);
         this.valueMap = Collections.unmodifiableNavigableMap(entryMap);
@@ -38,13 +38,11 @@ public final class CompoundTag extends Tag {
     }
 
     public Tag get(String name, Tag fallback) {
-        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
-        return entries.isEmpty() ? fallback : entries.get(entries.size() - 1).getValue();
+        return this.valueMap.containsKey(name) ? this.valueMap.get(name).getValue() : fallback;
     }
 
     public Tag getOrDefault(String name) {
-        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
-        return entries.isEmpty() ? EndTag.of() : entries.get(entries.size() - 1).getValue();
+        return this.valueMap.containsKey(name) ? this.valueMap.get(name).getValue() : EndTag.of();
     }
 
     public Tag get(String name, TagType type, Tag fallback) {
@@ -220,13 +218,11 @@ public final class CompoundTag extends Tag {
     }
 
     public Entry<?> getEntry(String name, Entry<?> fallback) {
-        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
-        return entries.isEmpty() ? fallback : entries.get(entries.size() - 1);
+        return this.valueMap.getOrDefault(name, fallback);
     }
 
     public Entry<?> getEntryOrDefault(String name) {
-        List<? extends Entry<?>> entries = this.valueMap.getOrDefault(name, Collections.emptyList());
-        return entries.isEmpty() ? new Entry<>("", EndTag.of()) : entries.get(entries.size() - 1);
+        return this.valueMap.getOrDefault(name, new Entry<>("", EndTag.of()));
     }
 
     public List<? extends Entry<?>> dump() {
@@ -329,7 +325,7 @@ public final class CompoundTag extends Tag {
     }
 
     public static final class Builder {
-        private final NavigableMap<String, List<Entry<?>>> entryMap;
+        private final NavigableMap<String, Entry<?>> entryMap;
         private List<Entry<?>> entries;
 
         private final boolean allowDuplicate;
@@ -421,17 +417,9 @@ public final class CompoundTag extends Tag {
             if (this.entries == null) {
                 throw new IllegalStateException("this builder has been frozen since build method was called");
             }
-            if (!this.entryMap.containsKey(entryName)) {
-                List<Entry<?>> entries = Collections.singletonList(entry);
-                this.entryMap.put(entryName, entries);
+            if (!this.entryMap.containsKey(entryName) || this.allowDuplicate) {
+                this.entryMap.put(entryName, entry);
                 this.entries.add(entry);
-                return this;
-            }
-            if (this.allowDuplicate) {
-                List<Entry<?>> entries = new ArrayList<>(this.entryMap.get(entryName));
-                this.entryMap.put(entryName, Collections.unmodifiableList(entries));
-                this.entries.add(entry);
-                entries.add(entry);
                 return this;
             }
             String escapedName = SIMPLE_KEY.matcher(entryName).matches() ? entryName : StringTag.escape(entryName);
