@@ -238,7 +238,7 @@ public final class ListTag extends Tag {
                         continue;
                     }
                     if (type == TagType.COMPOUND) {
-                        SortedSet<String> thisCompoundNames = ((CompoundTag) thatTag).names();
+                        SortedSet<String> thisCompoundNames = ((CompoundTag) thisTag).names();
                         if (((CompoundTag) thatTag).names().size() != thisCompoundNames.size()) return false;
                         for (String name: thisCompoundNames) {
                             thisTags.add(((CompoundTag) thisTag).getOrDefault(name));

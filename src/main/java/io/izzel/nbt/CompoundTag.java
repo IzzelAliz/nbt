@@ -245,7 +245,7 @@ public final class CompoundTag extends Tag {
                     TagType type = thisTag.getType();
                     if (type != thatTag.getType()) return false;
                     if (type == TagType.COMPOUND) {
-                        SortedSet<String> thisCompoundNames = ((CompoundTag) thatTag).names();
+                        SortedSet<String> thisCompoundNames = ((CompoundTag) thisTag).names();
                         if (((CompoundTag) thatTag).names().size() != thisCompoundNames.size()) return false;
                         for (String name: thisCompoundNames) {
                             thisTags.add(((CompoundTag) thisTag).getOrDefault(name));
