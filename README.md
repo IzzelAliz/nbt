@@ -1,4 +1,4 @@
-## NBT
+# NBT
 
 Java NBT (Named Binary Tag) library.
 
