@@ -79,9 +79,9 @@ public void filterOutLocalServers() throws IOException {
 }
 ```
 
-## License
+## Open-source license
 
-The library is under [MIT license](https://github.com/IzzelAliz/nbt/tree/master/LICENSE).
+The library is open-source project, under [MIT license](https://github.com/IzzelAliz/nbt/tree/master/LICENSE).
 
 ## Built from source
 
