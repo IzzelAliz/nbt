@@ -71,6 +71,8 @@ End tags do not have string representations (while common implementations often 
 
 ## Binary Format
 
+<!-- markdownlint-disable html whitespace -->
+
 The binary format is the actual format that Minecraft uses for loading and saving game data.
 
 The basic components of binary data are called named tags, each of which consists of three parts:
