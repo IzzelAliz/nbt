@@ -55,6 +55,7 @@ public class NbtReader implements Closeable {
     public Tag toTag() throws IOException {
         TagWriter writer = new TagWriter();
         this.read(new ValueContext(writer, this.tagType));
+        this.checkStreamEOF();
         return writer.getTag();
     }
 
@@ -70,6 +71,7 @@ public class NbtReader implements Closeable {
         try (StringWriter writer = new StringWriter()) {
             try (StringNbtWriter stringNbtWriter = new StringNbtWriter(writer)) {
                 this.accept(stringNbtWriter);
+                this.checkStreamEOF();
             }
             return writer.toString();
         }
@@ -231,6 +233,12 @@ public class NbtReader implements Closeable {
         byte[] bytes = new byte[len];
         this.data.readFully(bytes, 0, len);
         return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    private void checkStreamEOF() throws IOException {
+        if (this.data.read() >= 0) {
+            throw new IOException("EOF expected");
+        }
     }
 
     private static final class ValueContext {

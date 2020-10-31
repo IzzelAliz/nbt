@@ -74,6 +74,7 @@ public class StringNbtReader implements Closeable {
     public Tag toTag() throws IOException {
         TagWriter writer = new TagWriter();
         this.accept(writer);
+        this.readUntilEOF();
         return writer.getTag();
     }
 
@@ -89,6 +90,7 @@ public class StringNbtReader implements Closeable {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             try (NbtWriter nbtWriter = new NbtWriter(stream)) {
                 this.accept(nbtWriter);
+                this.readUntilEOF();
             }
             return stream.toByteArray();
         }
@@ -98,6 +100,7 @@ public class StringNbtReader implements Closeable {
         try (OutputStream stream = Files.newOutputStream(file)) {
             try (NbtWriter nbtWriter = new NbtWriter(stream)) {
                 this.accept(nbtWriter);
+                this.readUntilEOF();
             }
         }
     }
@@ -106,6 +109,7 @@ public class StringNbtReader implements Closeable {
         try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             try (CompressedNbtWriter nbtWriter = new CompressedNbtWriter(stream)) {
                 this.accept(nbtWriter);
+                this.readUntilEOF();
             }
             return stream.toByteArray();
         }
@@ -115,6 +119,7 @@ public class StringNbtReader implements Closeable {
         try (OutputStream stream = Files.newOutputStream(file)) {
             try (CompressedNbtWriter nbtWriter = new CompressedNbtWriter(stream)) {
                 this.accept(nbtWriter);
+                this.readUntilEOF();
             }
         }
     }
@@ -289,6 +294,8 @@ public class StringNbtReader implements Closeable {
             }
         }
         this.data.reset();
+        this.eof = false;
+        --this.pointer;
     }
 
     private void readByteArrayPart(TagValueVisitor visitor) throws IOException {
@@ -457,6 +464,14 @@ public class StringNbtReader implements Closeable {
                 }
             }
             sb.append(c);
+        }
+    }
+
+    private void readUntilEOF() throws IOException {
+        this.readNextChar();
+        this.readCharAfterSpaces();
+        if (!this.eof) {
+            throw this.error(ParseFailureException.Type.UNRECOGNIZED_VALUE_REPRESENTATION);
         }
     }
 
