@@ -134,3 +134,20 @@ A complete NBT binary data always contains a single named tag. In most cases, th
 ## Compressed binary format
 
 In most cases, Minecraft stores game data in GZIP compressed binary files instead of the uncompressed raw data shown above. However, some data is still saved without compression (for example, `servers.dat`).
+
+> [!ATTENTION|label:SECURITY NOTICE]
+> **DO NOT READ COMPRESSED BYTES FROM UNTRUSTED SOURCE DIRECTLY**
+>
+> [A vulnerability](https://bugs.mojang.com/browse/MC-79612) has been proved in Minecraft 1.8.3 and earlier game versions that reading from intentionally constructed compressed bytes would result in a significantly large NBT tag object. Developers should limit the maximum size of uncompressed bytes when uncompressing from untrusted source. As an approach, Google Guava provides a helper method named [`com.google.common.io.ByteStreams.limit`](https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/io/ByteStreams.html#limit-java.io.InputStream-long-) and developers may use this to wrap a gzipped input stream like this:
+>
+> ```java
+> import com.google.common.io.*;
+> import io.izzel.nbt.*;
+> import io.izzel.nbt.util.*;
+> import java.io.*;
+> import java.util.zip.*;
+>
+> public Tag readFromUntrustedSource(InputStream stream) throws IOException {
+>     return new NbtReader(ByteStreams.limit(new GZIPInputStream(stream), 0x200000L)).toTag();
+> }
+> ```
