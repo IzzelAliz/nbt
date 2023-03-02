@@ -4,6 +4,7 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.StringJoiner;
+import java.util.stream.IntStream;
 
 public class ImmutableInts implements Iterable<Integer> {
     private static final ImmutableInts EMPTY = new ImmutableInts(new int[0], 0, 0);
@@ -100,6 +101,10 @@ public class ImmutableInts implements Iterable<Integer> {
 
     public IntBuffer toIntBuffer() {
         return IntBuffer.wrap(value, offset, intCount).slice().asReadOnlyBuffer();
+    }
+
+    public IntStream stream() {
+        return IntStream.of(value);
     }
 
     public static ImmutableInts empty() {

@@ -4,8 +4,10 @@ import java.nio.LongBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.StringJoiner;
+import java.util.stream.LongStream;
 
 public class ImmutableLongs implements Iterable<Long> {
+
     private static final ImmutableLongs EMPTY = new ImmutableLongs(new long[0], 0, 0);
 
     private final long[] value;
@@ -100,6 +102,10 @@ public class ImmutableLongs implements Iterable<Long> {
 
     public LongBuffer toLongBuffer() {
         return LongBuffer.wrap(value, offset, longCount).slice().asReadOnlyBuffer();
+    }
+
+    public LongStream stream() {
+        return LongStream.of(value);
     }
 
     public static ImmutableLongs empty() {
