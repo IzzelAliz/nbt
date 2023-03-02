@@ -4,7 +4,7 @@ import io.izzel.nbt.visitor.TagValueVisitor;
 
 import java.util.stream.IntStream;
 
-public final class IntTag extends Tag {
+public final class IntTag extends Tag implements NumberTag {
 
     private static final IntTag[] CACHE = IntStream
             .rangeClosed(Byte.MIN_VALUE, Byte.MAX_VALUE)
@@ -18,6 +18,11 @@ public final class IntTag extends Tag {
     }
 
     public int getInt() {
+        return this.value;
+    }
+
+    @Override
+    public Number getNumber() {
         return this.value;
     }
 

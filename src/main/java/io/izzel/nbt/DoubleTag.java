@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public final class DoubleTag extends Tag {
+public final class DoubleTag extends Tag implements NumberTag {
 
     private final double value;
 
@@ -12,6 +12,11 @@ public final class DoubleTag extends Tag {
     }
 
     public double getDouble() {
+        return this.value;
+    }
+
+    @Override
+    public Number getNumber() {
         return this.value;
     }
 

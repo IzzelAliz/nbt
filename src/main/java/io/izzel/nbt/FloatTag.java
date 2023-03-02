@@ -2,7 +2,7 @@ package io.izzel.nbt;
 
 import io.izzel.nbt.visitor.TagValueVisitor;
 
-public final class FloatTag extends Tag {
+public final class FloatTag extends Tag implements NumberTag {
 
     private final float value;
 
@@ -12,6 +12,11 @@ public final class FloatTag extends Tag {
     }
 
     public float getFloat() {
+        return this.value;
+    }
+
+    @Override
+    public Number getNumber() {
         return this.value;
     }
 
