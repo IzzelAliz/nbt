@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = "https://repo.spongepowered.org/repository/maven-public/"
+    }
+}
+
+dependencies {
+    implementation "com.mojang:datafixerupper:4.0.26"
+    implementation project(":")
+}
+
+test {
+    useJUnit()
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "IzzelAliz"
+            url = uri("https://maven.izzel.io/releases")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
