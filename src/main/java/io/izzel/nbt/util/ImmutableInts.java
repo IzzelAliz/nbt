@@ -107,6 +107,14 @@ public class ImmutableInts implements Iterable<Integer> {
         return IntStream.of(value);
     }
 
+    public ImmutableInts concat(ImmutableInts other) {
+        return concat(this, other);
+    }
+
+    public Builder toBuilder() {
+        return new Builder(this.value);
+    }
+
     public static ImmutableInts empty() {
         return EMPTY;
     }
@@ -144,6 +152,11 @@ public class ImmutableInts implements Iterable<Integer> {
 
         private Builder(int initCapacity) {
             this.value = new int[initCapacity];
+        }
+
+        private Builder(int[] array) {
+            this.value = Arrays.copyOf(array, array.length);
+            this.length = array.length;
         }
 
         private int[] growIfNecessary(int size) {

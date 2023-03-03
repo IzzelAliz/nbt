@@ -102,6 +102,14 @@ public class ImmutableBytes implements Iterable<Byte> {
         return ByteBuffer.wrap(value, offset, byteCount).slice().asReadOnlyBuffer();
     }
 
+    public ImmutableBytes concat(ImmutableBytes other) {
+        return concat(this, other);
+    }
+
+    public ImmutableBytes.Builder toBuilder() {
+        return new ImmutableBytes.Builder(this.value);
+    }
+
     public static ImmutableBytes empty() {
         return EMPTY;
     }
@@ -139,6 +147,11 @@ public class ImmutableBytes implements Iterable<Byte> {
 
         private Builder(int initCapacity) {
             this.value = new byte[initCapacity];
+        }
+
+        private Builder(byte[] array) {
+            this.value = Arrays.copyOf(array, array.length);
+            this.length = array.length;
         }
 
         private byte[] growIfNecessary(int size) {

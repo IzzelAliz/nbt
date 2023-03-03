@@ -243,7 +243,7 @@ public final class CompoundTag extends Tag {
                     if (type == TagType.COMPOUND) {
                         SortedSet<String> thisCompoundNames = ((CompoundTag) thisTag).names();
                         if (((CompoundTag) thatTag).names().size() != thisCompoundNames.size()) return false;
-                        for (String name: thisCompoundNames) {
+                        for (String name : thisCompoundNames) {
                             thisTags.add(((CompoundTag) thisTag).getOrDefault(name));
                             thatTags.add(((CompoundTag) thatTag).getOrDefault(name));
                         }
@@ -261,6 +261,14 @@ public final class CompoundTag extends Tag {
             return true;
         }
         return false;
+    }
+
+    public CompoundTag.Builder toBuilder() {
+        return toBuilder(false);
+    }
+
+    public CompoundTag.Builder toBuilder(boolean allowDuplicate) {
+        return new Builder(this, allowDuplicate);
     }
 
     @Override
@@ -333,6 +341,12 @@ public final class CompoundTag extends Tag {
         private Builder(boolean allowDuplicate) {
             this.entryMap = new TreeMap<>();
             this.entries = new ArrayList<>();
+            this.allowDuplicate = allowDuplicate;
+        }
+
+        private Builder(CompoundTag compoundTag, boolean allowDuplicate) {
+            this.entryMap = new TreeMap<>(compoundTag.valueMap);
+            this.entries = new ArrayList<>(compoundTag.values);
             this.allowDuplicate = allowDuplicate;
         }
 
@@ -424,6 +438,102 @@ public final class CompoundTag extends Tag {
             }
             String escapedName = SIMPLE_KEY.matcher(entryName).matches() ? entryName : StringTag.escape(entryName);
             throw new IllegalArgumentException("Duplicate tag names: " + escapedName);
+        }
+
+        public Builder remove(String key) {
+            Entry<?> entry = this.entryMap.remove(key);
+            this.entries.remove(entry);
+            return this;
+        }
+
+        public Builder set(String name, Tag tag) {
+            return this.set(new Entry<>(name, tag));
+        }
+
+        public Builder set(String name, boolean b) {
+            return this.set(name, ByteTag.of(b));
+        }
+
+        public Builder set(String name, byte b) {
+            return this.set(name, ByteTag.of(b));
+        }
+
+        public Builder set(String name, short s) {
+            return this.set(name, ShortTag.of(s));
+        }
+
+        public Builder set(String name, int i) {
+            return this.set(name, IntTag.of(i));
+        }
+
+        public Builder set(String name, long l) {
+            return this.set(name, LongTag.of(l));
+        }
+
+        public Builder set(String name, float f) {
+            return this.set(name, FloatTag.of(f));
+        }
+
+        public Builder set(String name, double d) {
+            return this.set(name, DoubleTag.of(d));
+        }
+
+        public Builder set(String name, byte[] bytes) {
+            return this.set(name, ByteArrayTag.of(bytes));
+        }
+
+        public Builder set(String name, ByteBuffer bytes) {
+            return this.set(name, ByteArrayTag.of(bytes));
+        }
+
+        public Builder set(String name, ImmutableBytes bytes) {
+            return this.set(name, ByteArrayTag.of(bytes));
+        }
+
+        public Builder set(String name, int[] ints) {
+            return this.set(name, IntArrayTag.of(ints));
+        }
+
+        public Builder set(String name, IntBuffer ints) {
+            return this.set(name, IntArrayTag.of(ints));
+        }
+
+        public Builder set(String name, ImmutableInts ints) {
+            return this.set(name, IntArrayTag.of(ints));
+        }
+
+        public Builder set(String name, long[] longs) {
+            return this.set(name, LongArrayTag.of(longs));
+        }
+
+        public Builder set(String name, LongBuffer longs) {
+            return this.set(name, LongArrayTag.of(longs));
+        }
+
+        public Builder set(String name, ImmutableLongs longs) {
+            return this.set(name, LongArrayTag.of(longs));
+        }
+
+        public Builder set(String name, String s) {
+            return this.set(name, StringTag.of(s));
+        }
+
+        public Builder set(Entry<?> entry) {
+            String entryName = entry.getKey();
+            if (entry.getValue().getType() == TagType.END) {
+                String escapedName = SIMPLE_KEY.matcher(entryName).matches() ? entryName : StringTag.escape(entryName);
+                throw new IllegalArgumentException("Compound tags do not allow end tag values, name: " + escapedName);
+            }
+            if (this.entries == null) {
+                throw new IllegalStateException("this builder has been frozen since build method was called");
+            }
+            Entry<?> old = this.entryMap.put(entryName, entry);
+            if (old != null) {
+                this.entries.replaceAll(it -> it == old ? entry : it);
+            } else {
+                this.entries.add(entry);
+            }
+            return this;
         }
 
         public CompoundTag build() {

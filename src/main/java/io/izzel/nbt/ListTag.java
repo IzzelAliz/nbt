@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 
 public final class ListTag extends Tag {
 
@@ -220,6 +221,10 @@ public final class ListTag extends Tag {
         return this.values;
     }
 
+    public Stream<Tag> stream() {
+        return this.values.stream();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
@@ -240,7 +245,7 @@ public final class ListTag extends Tag {
                     if (type == TagType.COMPOUND) {
                         SortedSet<String> thisCompoundNames = ((CompoundTag) thisTag).names();
                         if (((CompoundTag) thatTag).names().size() != thisCompoundNames.size()) return false;
-                        for (String name: thisCompoundNames) {
+                        for (String name : thisCompoundNames) {
                             thisTags.add(((CompoundTag) thisTag).getOrDefault(name));
                             thatTags.add(((CompoundTag) thatTag).getOrDefault(name));
                         }
@@ -252,6 +257,10 @@ public final class ListTag extends Tag {
             return true;
         }
         return false;
+    }
+
+    public Builder toBuilder() {
+        return new Builder(new ArrayList<>(this.values), this.elemType);
     }
 
     @Override
@@ -363,6 +372,14 @@ public final class ListTag extends Tag {
 
         public Builder add(String s) {
             return this.add(StringTag.of(s));
+        }
+
+        public Builder remove(int index) {
+            if (index < 0) {
+                index = this.values.size() - index;
+            }
+            this.values.remove(index);
+            return this;
         }
 
         public ListTag build() {

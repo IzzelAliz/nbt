@@ -108,6 +108,14 @@ public class ImmutableLongs implements Iterable<Long> {
         return LongStream.of(value);
     }
 
+    public ImmutableLongs concat(ImmutableLongs other) {
+        return concat(this, other);
+    }
+
+    public ImmutableLongs.Builder toBuilder() {
+        return new ImmutableLongs.Builder(this.value);
+    }
+
     public static ImmutableLongs empty() {
         return EMPTY;
     }
@@ -145,6 +153,11 @@ public class ImmutableLongs implements Iterable<Long> {
 
         private Builder(int initCapacity) {
             this.value = new long[initCapacity];
+        }
+
+        private Builder(long[] array) {
+            this.value = Arrays.copyOf(array, array.length);
+            this.length = array.length;
         }
 
         private long[] growIfNecessary(int size) {
