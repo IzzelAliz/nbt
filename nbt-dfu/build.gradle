@@ -13,6 +13,7 @@ repositories {
 dependencies {
     implementation "com.mojang:datafixerupper:4.0.26"
     implementation project(":")
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
 }
 
 test {
